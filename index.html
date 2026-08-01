@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат</title>
+    <title>Чат с Админкой</title>
     
-    <!-- Подключаем Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -17,31 +16,20 @@
             --text-muted: #aaaaaa;
             --accent-primary: #00f2fe;
             --accent-secondary: #4facfe;
-            --btn-glow: 0 0 15px rgba(0, 242, 254, 0.6), 0 0 5px rgba(79, 172, 254, 0.4);
-            --btn-glow-hover: 0 0 25px rgba(0, 242, 254, 0.9), 0 0 10px rgba(79, 172, 254, 0.6);
+            --btn-glow: 0 0 15px rgba(0, 242, 254, 0.6);
             --border-color: rgba(255, 255, 255, 0.12);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
 
         body {
             background-color: #050505;
-            background-repeat: repeat;
-            background-position: center;
-            background-size: cover;
-            background-attachment: fixed;
             color: var(--text-main);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
-            transition: background 0.5s ease;
         }
 
         .glow-button {
@@ -51,244 +39,148 @@
             border-radius: 20px;
             cursor: pointer;
             font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
+            padding: 10px 20px;
             transition: all 0.3s ease;
             box-shadow: var(--btn-glow);
-            outline: none;
         }
 
-        .glow-button:hover {
-            box-shadow: var(--btn-glow-hover);
-            transform: translateY(-2px);
-        }
+        .glow-button:hover { transform: translateY(-2px); }
 
-        .bg-change-btn {
+        .btn-small {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            padding: 5px 12px;
-            border-radius: 15px;
+            padding: 5px 10px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 0.8rem;
-            transition: all 0.3s ease;
         }
 
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             z-index: 1000;
             backdrop-filter: blur(8px);
         }
 
         .modal {
             background: var(--bg-chat);
-            padding: 30px;
+            padding: 25px;
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-            text-align: center;
             width: 340px;
             border: 1px solid var(--border-color);
+            text-align: center;
         }
-
-        .modal h2 { margin-bottom: 10px; color: var(--text-main); }
-        .modal p { color: var(--text-muted); margin-bottom: 15px; font-size: 0.85rem; }
 
         .modal input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 8px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: var(--bg-input);
-            color: var(--text-main);
-            outline: none;
-        }
-
-        .error-msg {
-            color: #ff4d4d;
-            font-size: 0.75rem;
-            margin-bottom: 15px;
-            display: none;
+            width: 100%; padding: 10px; margin: 10px 0;
+            border-radius: 8px; border: 1px solid var(--border-color);
+            background: var(--bg-input); color: #fff; outline: none;
         }
 
         .chat-container {
-            width: 100%;
-            max-width: 750px;
-            height: 90vh;
+            width: 100%; max-width: 750px; height: 90vh;
             background: var(--bg-chat);
             backdrop-filter: blur(12px);
             border-radius: 20px;
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            display: flex; flex-direction: column;
             border: 1px solid var(--border-color);
         }
 
         .chat-header {
-            background: rgba(15, 15, 20, 0.7);
-            color: var(--text-main);
             padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
+            background: rgba(15, 15, 20, 0.7);
+            display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--border-color);
         }
 
         .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        @keyframes popIn {
-            0% { opacity: 0; transform: translateY(15px) scale(0.95); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
+            flex: 1; padding: 20px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 12px;
         }
 
         .message {
-            max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 16px;
-            background: var(--bg-input);
-            color: var(--text-main);
-            align-self: flex-start;
-            word-wrap: break-word;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 75%; padding: 10px 14px; border-radius: 14px;
+            background: var(--bg-input); align-self: flex-start;
+            word-wrap: break-word; border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .message.my-message {
-            background: linear-gradient(135deg, rgba(45,45,55,0.9) 0%, rgba(20,25,35,0.9) 100%);
-            align-self: flex-end;
-            border: 1px solid rgba(0, 242, 254, 0.4);
+            background: linear-gradient(135deg, rgba(45,45,55,0.9), rgba(20,25,35,0.9));
+            align-self: flex-end; border: 1px solid rgba(0, 242, 254, 0.4);
         }
 
-        .message .username {
-            font-size: 0.75rem;
-            font-weight: bold;
-            margin-bottom: 6px;
-            color: var(--accent-primary);
-        }
-
-        .message img {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-top: 8px;
-            border: 1px solid var(--border-color);
-        }
+        .message .username { font-size: 0.75rem; font-weight: bold; color: var(--accent-primary); margin-bottom: 4px; }
 
         .chat-input-area {
-            padding: 15px 20px;
-            background: rgba(15, 15, 20, 0.8);
+            padding: 15px; background: rgba(15, 15, 20, 0.8);
             border-top: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            display: flex; gap: 10px;
         }
 
-        .controls-row { display: flex; align-items: center; gap: 12px; }
-
-        .emoji-bar { display: flex; gap: 10px; font-size: 1.3rem; cursor: pointer; }
-
-        .input-wrapper { position: relative; flex: 1; display: flex; align-items: center; }
-
-        .chat-input-area input[type="text"] {
-            width: 100%;
-            padding: 12px 65px 12px 18px;
-            border: 1px solid var(--border-color);
-            border-radius: 25px;
-            outline: none;
-            background-color: var(--bg-input);
-            color: var(--text-main);
+        .chat-input-area input {
+            flex: 1; padding: 10px 15px; border-radius: 20px;
+            border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; outline: none;
         }
 
-        .file-label { cursor: pointer; font-size: 1.4rem; color: var(--text-muted); }
-        #file-input, #bg-file-input { display: none; }
-
-        .file-preview {
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(0, 242, 254, 0.1);
-            border: 1px solid var(--accent-primary);
-            padding: 8px 15px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-        }
+        .admin-panel { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+        .admin-panel button { margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <!-- Окно выбора ника -->
-    <div class="modal-overlay" id="nickname-modal">
+    <!-- Вход / Смена ника -->
+    <div class="modal-overlay" id="nickname-modal" style="display: none;">
         <div class="modal">
-            <h2>Введите ник</h2>
-            <p>Русские и английские буквы (3-15 символов), без мата:</p>
+            <h2 id="modal-title">Введите ник</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Сменить ник можно только 1 раз в неделю!</p>
             <input type="text" id="nickname-input" placeholder="Никнейм..." maxlength="15">
-            <div class="error-msg" id="modal-error">Некорректный ник!</div>
-            <button class="glow-button" style="width:100%; padding: 12px;" onclick="setUsername()">Войти</button>
+            <div id="modal-error" style="color: #ff4d4d; font-size: 0.8rem; display:none;"></div>
+            <button class="glow-button" style="width:100%; margin-top: 10px;" onclick="saveUsername()">Сохранить</button>
         </div>
     </div>
 
-    <!-- Чат -->
+    <!-- Админ Панель Модалка -->
+    <div class="modal-overlay" id="admin-modal" style="display: none;">
+        <div class="modal">
+            <h2>👑 Панель Управления</h2>
+            <div class="admin-panel" style="margin-top: 15px;">
+                <input type="text" id="target-user" placeholder="Имя пользователя...">
+                <button class="btn-small" style="background:#ff4d4d;" onclick="banUser()">🚫 Забанить</button>
+                <button class="btn-small" style="background:#4caf50;" onclick="unbanUser()">🔓 Разбанить</button>
+                <button class="btn-small" style="background:#2196f3;" onclick="allowNickChange()">🔄 Сбросить кулдаун ника</button>
+                <hr style="border-color: var(--border-color); margin: 10px 0;">
+                <button class="btn-small" style="background:#e91e63; width:100%;" onclick="clearAllMessages()">🗑️ Очистить весь чат</button>
+            </div>
+            <button class="btn-small" style="width:100%; margin-top: 15px;" onclick="closeAdmin()">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Главный Чат -->
     <div class="chat-container">
         <div class="chat-header">
-            <span>💬 ЧАТ</span>
             <div>
-                <button class="bg-change-btn" onclick="document.getElementById('bg-file-input').click()">🖼️ Фон</button>
-                <input type="file" id="bg-file-input" accept="image/*" onchange="changeBackground(event)">
-                <span id="user-display" style="font-size: 0.85rem; color: var(--text-muted); margin-left: 10px;"></span>
+                <span>💬 ЧАТ</span>
+                <span id="user-display" style="font-size: 0.85rem; color: var(--accent-primary); margin-left: 10px;"></span>
+                <button class="btn-small" onclick="promptChangeNick()" style="margin-left: 5px;">✏️</button>
+            </div>
+            <div>
+                <button class="btn-small" onclick="openAdmin()">👑 Админка</button>
             </div>
         </div>
 
         <div class="chat-messages" id="chat-messages"></div>
 
         <div class="chat-input-area">
-            <div class="file-preview" id="file-preview">
-                <span id="file-preview-name">📎 Файл прикреплен</span>
-                <span style="cursor:pointer; color:#ff4d4d;" onclick="removeSelectedFile()">✖</span>
-            </div>
-
-            <div class="emoji-bar">
-                <span onclick="addEmoji('😎')">😎</span>
-                <span onclick="addEmoji('😈')">😈</span>
-                <span onclick="addEmoji('✨')">✨</span>
-                <span onclick="addEmoji('🎧')">🎧</span>
-                <span onclick="addEmoji('🎮')">🎮</span>
-                <span onclick="addEmoji('🚀')">🚀</span>
-            </div>
-
-            <div class="controls-row">
-                <label for="file-input" class="file-label">📎</label>
-                <input type="file" id="file-input" onchange="handleFileSelect(event)">
-
-                <div class="input-wrapper">
-                    <input type="text" id="message-input" placeholder="Напишите сообщение..." maxlength="1000" onkeypress="handleKeyPress(event)">
-                </div>
-                
-                <button class="glow-button" style="padding: 10px 20px;" onclick="sendMessage()">Отправить</button>
-            </div>
+            <input type="text" id="message-input" placeholder="Напишите сообщение..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="glow-button" onclick="sendMessage()">Отправить</button>
         </div>
     </div>
 
     <script>
-        // Конфигурация Firebase с твоими ключами
+        // Конфигурация Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDxcjoPs5nfVrCyXs21EJZXscQ51txvAGU",
             authDomain: "chat-app-7530d.firebaseapp.com",
@@ -296,152 +188,170 @@
             projectId: "chat-app-7530d",
             storageBucket: "chat-app-7530d.firebasestorage.app",
             messagingSenderId: "892413271650",
-            appId: "1:892413271650:web:5dc718cf2748d724c7bb3b",
-            measurementId: "G-032XPSWEH0"
+            appId: "1:892413271650:web:5dc718cf2748d724c7bb3b"
         };
 
-        // Инициализация Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const messagesRef = database.ref('messages');
+        const bansRef = database.ref('bans');
+        const resetNickRef = database.ref('resetNickRequests');
 
-        let currentUser = "";
-        const badWords = ["хуй", "блят", "сука", "ебат", "пизд", "пидор", "fuck", "bitch", "shit"];
+        // 🔑 ТВОЙ ПАРОЛЬ АДМИНИСТРАТОРА (Можешь изменить на свой!)
+        const ADMIN_PASSWORD = "1234";
 
-        function changeBackground(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => document.body.style.backgroundImage = `url('${e.target.result}')`;
-                reader.readAsDataURL(file);
+        let currentUser = localStorage.getItem('chat_username') || "";
+        let lastNickChange = localStorage.getItem('chat_last_nick_change') || 0;
+
+        // Проверка при запуске
+        window.onload = function() {
+            if (!currentUser) {
+                document.getElementById('nickname-modal').style.display = 'flex';
+            } else {
+                initChat();
             }
-        }
+        };
 
-        function filterBadWords(text) {
-            let filteredText = text;
-            badWords.forEach(word => {
-                const regex = new RegExp(word, 'gi');
-                filteredText = filteredText.replace(regex, '***');
-            });
-            return filteredText;
-        }
-
-        function setUsername() {
+        function saveUsername() {
             const input = document.getElementById('nickname-input');
             const name = input.value.trim();
-            const validLettersPattern = /^[a-zA-Z0-9а-яА-ЯёЁ_]+$/;
 
-            if (name.length < 3 || name.length > 15 || !validLettersPattern.test(name)) {
-                showError("Используйте 3-15 символов (буквы и цифры)!");
-                return;
-            }
-
-            if (badWords.some(w => name.toLowerCase().includes(w))) {
-                showError("Нельзя использовать мат в нике!");
+            if (name.length < 3 || name.length > 15) {
+                showError("Ник должен быть от 3 до 15 символов!");
                 return;
             }
 
             currentUser = name;
+            lastNickChange = Date.now();
+            localStorage.setItem('chat_username', currentUser);
+            localStorage.setItem('chat_last_nick_change', lastNickChange);
+
             document.getElementById('nickname-modal').style.display = 'none';
-            document.getElementById('user-display').innerText = `Online: ${currentUser}`;
-            
-            // Загружаем сообщения из Firebase
+            initChat();
+        }
+
+        function promptChangeNick() {
+            const now = Date.now();
+            const ONE_WEEK = 7 * 24 * 60 * 60 * 1000; // 7 дней в миллисекундах
+
+            // Проверка: прошло ли 7 дней с последней смены
+            if (now - lastNickChange < ONE_WEEK) {
+                const daysLeft = Math.ceil((ONE_WEEK - (now - lastNickChange)) / (1000 * 60 * 60 * 24));
+                alert(`Сменить ник можно только 1 раз в неделю! Осталось ждать: ${daysLeft} дн.`);
+                return;
+            }
+
+            document.getElementById('nickname-modal').style.display = 'flex';
+        }
+
+        function initChat() {
+            document.getElementById('user-display').innerText = `@${currentUser}`;
             listenForMessages();
+            listenForAdminResets();
         }
 
         function showError(msg) {
-            const errorDiv = document.getElementById('modal-error');
-            errorDiv.innerText = msg;
-            errorDiv.style.display = 'block';
+            const err = document.getElementById('modal-error');
+            err.innerText = msg;
+            err.style.display = 'block';
         }
 
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                document.getElementById('file-preview-name').innerText = `📎 Готов: ${file.name}`;
-                document.getElementById('file-preview').style.display = 'flex';
-            }
-        }
-
-        function removeSelectedFile() {
-            document.getElementById('file-input').value = '';
-            document.getElementById('file-preview').style.display = 'none';
-        }
-
-        function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
-
-        function addEmoji(emoji) {
+        // Отправка сообщений
+        async function sendMessage() {
             const input = document.getElementById('message-input');
-            input.value += emoji;
-            input.focus();
-        }
+            const text = input.value.trim();
+            if (!text) return;
 
-        function sendMessage() {
-            const textInput = document.getElementById('message-input');
-            const fileInput = document.getElementById('file-input');
-            let text = textInput.value.trim();
-            const file = fileInput.files[0];
-
-            if (!text && !file) return;
-
-            text = filterBadWords(text);
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    saveToFirebase(text, e.target.result, file.type.startsWith('image/'), file.name);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                saveToFirebase(text, null, false, null);
+            // Проверка на Бан
+            const banSnapshot = await bansRef.child(currentUser).once('value');
+            if (banSnapshot.exists() && banSnapshot.val() === true) {
+                alert("❌ Вы забанены администратором и не можете отправлять сообщения!");
+                return;
             }
 
-            textInput.value = '';
-            removeSelectedFile();
-        }
-
-        // Отправка в онлайн базу данных
-        function saveToFirebase(text, fileUrl, isImage, fileName) {
             messagesRef.push({
                 user: currentUser,
                 text: text,
-                fileUrl: fileUrl || null,
-                isImage: isImage || false,
-                fileName: fileName || null,
                 timestamp: Date.now()
             });
+
+            input.value = '';
         }
 
-        // Прослушивание новых сообщений в реальном времени
         function listenForMessages() {
-            const messagesContainer = document.getElementById('chat-messages');
-            messagesContainer.innerHTML = '';
-
-            messagesRef.limitToLast(50).on('child_added', (snapshot) => {
-                const data = snapshot.val();
-                renderMessage(data.user, data.text, data.fileUrl, data.isImage, data.fileName, data.user === currentUser);
+            messagesRef.limitToLast(50).on('value', (snapshot) => {
+                const container = document.getElementById('chat-messages');
+                container.innerHTML = '';
+                snapshot.forEach((child) => {
+                    const data = child.val();
+                    renderMessage(data.user, data.text, data.user === currentUser);
+                });
+                container.scrollTop = container.scrollHeight;
             });
         }
 
-        function renderMessage(user, text, fileUrl, isImage, fileName, isMyMessage) {
-            const messagesContainer = document.getElementById('chat-messages');
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message');
-            if (isMyMessage) msgDiv.classList.add('my-message');
+        function renderMessage(user, text, isMy) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = `message ${isMy ? 'my-message' : ''}`;
+            div.innerHTML = `<div class="username">${user}</div><div>${text}</div>`;
+            container.appendChild(div);
+        }
 
-            let content = `<div class="username">${user}</div>`;
-            if (text) content += `<div>${text}</div>`;
-            if (fileUrl) {
-                if (isImage) {
-                    content += `<img src="${fileUrl}" alt="Изображение">`;
-                } else {
-                    content += `<div style="margin-top: 8px;"><a href="${fileUrl}" download="${fileName}" style="color:var(--accent-primary);">💾 Файл: ${fileName}</a></div>`;
-                }
+        // --- 👑 АДМИН ПАНЕЛЬ ---
+        function openAdmin() {
+            const pass = prompt("Введите секретный пароль админа:");
+            if (pass === ADMIN_PASSWORD) {
+                document.getElementById('admin-modal').style.display = 'flex';
+            } else if (pass !== null) {
+                alert("Неверный пароль!");
             }
+        }
 
-            msgDiv.innerHTML = content;
-            messagesContainer.appendChild(msgDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        function closeAdmin() {
+            document.getElementById('admin-modal').style.display = 'none';
+        }
+
+        function banUser() {
+            const user = document.getElementById('target-user').value.trim();
+            if (user) {
+                bansRef.child(user).set(true);
+                alert(`Пользователь ${user} забанен!`);
+            }
+        }
+
+        function unbanUser() {
+            const user = document.getElementById('target-user').value.trim();
+            if (user) {
+                bansRef.child(user).remove();
+                alert(`Пользователь ${user} разбанен!`);
+            }
+        }
+
+        function allowNickChange() {
+            const user = document.getElementById('target-user').value.trim();
+            if (user) {
+                resetNickRef.child(user).set(Date.now());
+                alert(`Кулдаун ника для ${user} сброшен!`);
+            }
+        }
+
+        function clearAllMessages() {
+            if (confirm("Вы уверены, что хотите удалить ВСЕ сообщения в чате?")) {
+                messagesRef.remove();
+            }
+        }
+
+        // Прослушка сигналов от админа на сброс кулдауна
+        function listenForAdminResets() {
+            resetNickRef.child(currentUser).on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    localStorage.setItem('chat_last_nick_change', 0);
+                    lastNickChange = 0;
+                    alert("🎉 Администратор разрешил вам сменить ник прямо сейчас!");
+                    resetNickRef.child(currentUser).remove();
+                }
+            });
         }
     </script>
 </body>
