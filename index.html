@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат с Nitro & Модерацией</title>
+    <title>Cyberpunk Chat с Nitro & Модерацией</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -11,34 +11,52 @@
     <!-- Подключаем шрифты Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@600;800&family=Pacifico&family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@600;800;900&family=Pacifico&family=Press+Start+2P&family=Rajdhani:wght@500;600;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-chat: rgba(18, 18, 24, 0.75);
-            --bg-input: rgba(35, 35, 45, 0.85);
-            --text-main: #f0f0f0;
-            --text-muted: #aaaaaa;
-            --accent-primary: #00f2fe;
-            --accent-secondary: #4facfe;
-            --nitro-color: #ff007f;
-            --btn-glow: 0 0 15px rgba(0, 242, 254, 0.5);
-            --border-color: rgba(255, 255, 255, 0.12);
+            --bg-main: #06060c;
+            --bg-chat: rgba(12, 12, 22, 0.85);
+            --bg-input: rgba(18, 18, 32, 0.9);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-primary: #00f3ff;
+            --accent-secondary: #b000ff;
+            --nitro-color: #ff0055;
+            --cyber-yellow: #ffe600;
+            --btn-glow: 0 0 15px rgba(0, 243, 255, 0.4);
+            --border-color: rgba(0, 243, 255, 0.25);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Rajdhani', sans-serif; }
+
+        /* 🌌 Анимированный задний фон Киберпанк */
+        body {
+            background-color: var(--bg-main);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 243, 255, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(255, 0, 85, 0.12) 0%, transparent 45%),
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            color: var(--text-main);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
         }
 
         /* 🎭 Nitro Рамки */
         .frame-none { border: 2px solid var(--border-color); }
-        .frame-neon { border: 3px solid #00f2fe !important; box-shadow: 0 0 12px #00f2fe; }
+        .frame-neon { border: 3px solid var(--accent-primary) !important; box-shadow: 0 0 12px var(--accent-primary); }
         .frame-rainbow { 
             border: 3px solid transparent !important; 
-            background: linear-gradient(#111, #111) padding-box, linear-gradient(45deg, red, yellow, green, cyan, blue, magenta) border-box; 
+            background: linear-gradient(#111, #111) padding-box, linear-gradient(45deg, #ff0055, #ffe600, #00ff66, #00f3ff, #b000ff) border-box; 
         }
-        .frame-fire { border: 3px solid #ff4500 !important; box-shadow: 0 0 14px #ff4500, 0 0 20px #ff8c00; }
-        .frame-gold { border: 3px solid #ffd700 !important; box-shadow: 0 0 12px #ffd700; }
+        .frame-fire { border: 3px solid #ff4500 !important; box-shadow: 0 0 14px #ff4500, 0 0 22px #ff8c00; }
+        .frame-gold { border: 3px solid #ffd700 !important; box-shadow: 0 0 14px #ffd700, inset 0 0 8px #ffd700; }
 
         /* 🌈 Радужный Текст */
         .rainbow-text {
-            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+            background: linear-gradient(90deg, #ff0055, #ffe600, #00ff66, #00f3ff, #b000ff, #ff0055);
             background-size: 200% auto;
             color: transparent !important;
             -webkit-background-clip: text;
@@ -51,129 +69,127 @@
             100% { background-position: 200% 50%; }
         }
 
-        /* 🌌 Анимированный задний фон */
-        body {
-            background: linear-gradient(-45deg, #050508, #120a2a, #0a1826, #1a051d);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            color: var(--text-main);
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden; font-family: 'Roboto', sans-serif;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
         /* 🚀 БАННЕРЫ */
         .ad-banner-container.discord {
             position: fixed; top: 20px; left: -350px; width: 260px; aspect-ratio: 1.5 / 1;
-            border-radius: 14px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7); z-index: 9999;
+            border-radius: 14px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); z-index: 9999;
             display: flex; align-items: center; justify-content: center; overflow: hidden;
             transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.2); background: transparent;
+            border: 1px solid var(--border-color); background: rgba(10, 10, 20, 0.8);
         }
 
         .ad-banner-container.aviasales {
             position: fixed; top: 210px; left: -350px; width: 260px; aspect-ratio: 2 / 1;
-            border-radius: 14px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7); z-index: 9998;
+            border-radius: 14px; box-shadow: 0 0 20px rgba(255, 0, 85, 0.3); z-index: 9998;
             display: flex; align-items: center; justify-content: center; overflow: hidden;
             transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.2); background: transparent;
+            border: 1px solid rgba(255, 0, 85, 0.4); background: rgba(10, 10, 20, 0.8);
         }
 
         .ad-banner-container.show { left: 20px; }
         .ad-banner-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
         .ad-close-btn {
-            position: absolute; top: 6px; right: 6px; background: rgba(0, 0, 0, 0.6);
-            color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px;
+            position: absolute; top: 6px; right: 6px; background: rgba(0, 0, 0, 0.8);
+            color: #fff; border: 1px solid var(--border-color); border-radius: 50%; width: 24px; height: 24px;
             font-size: 11px; cursor: pointer; display: flex; justify-content: center;
-            align-items: center; z-index: 10000; transition: background 0.2s;
+            align-items: center; z-index: 10000; transition: all 0.2s;
         }
-        .ad-close-btn:hover { background: rgba(0, 0, 0, 0.9); }
+        .ad-close-btn:hover { background: var(--nitro-color); border-color: var(--nitro-color); }
 
+        /* 🔘 КНОПКИ С НЕОНОМ */
         .glow-button {
-            background: linear-gradient(45deg, var(--accent-secondary), var(--accent-primary));
-            color: #000; border: none; border-radius: 20px; cursor: pointer;
-            font-weight: bold; padding: 10px 20px; transition: all 0.3s ease; box-shadow: var(--btn-glow);
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: #000; border: none; border-radius: 10px; cursor: pointer;
+            font-weight: 700; padding: 10px 20px; transition: all 0.3s ease; 
+            box-shadow: var(--btn-glow); text-transform: uppercase; letter-spacing: 1px;
         }
-        .glow-button:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0, 242, 254, 0.8); }
+        .glow-button:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(0, 243, 255, 0.8); }
 
         .btn-nitro {
-            background: linear-gradient(45deg, #ff007f, #7928ca);
-            color: #fff; border: none; border-radius: 12px; cursor: pointer;
-            font-weight: bold; padding: 6px 14px; font-size: 0.8rem;
-            box-shadow: 0 0 12px rgba(255, 0, 127, 0.5); transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, var(--nitro-color), var(--accent-secondary));
+            color: #fff; border: none; border-radius: 10px; cursor: pointer;
+            font-weight: 700; padding: 8px 16px; font-size: 0.8rem; letter-spacing: 1px;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.4); transition: all 0.3s ease;
         }
-        .btn-nitro:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 0, 127, 0.8); }
+        .btn-nitro:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 0, 85, 0.8); }
 
         .btn-apply {
-            background: linear-gradient(45deg, #00c853, #00e676);
-            color: #000; border: none; border-radius: 14px; cursor: pointer;
-            font-weight: bold; padding: 12px 20px; font-size: 0.95rem;
-            box-shadow: 0 0 15px rgba(0, 230, 118, 0.5); transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, #00ff66, #00b344);
+            color: #000; border: none; border-radius: 10px; cursor: pointer;
+            font-weight: 700; padding: 12px 20px; font-size: 0.9rem;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.4); transition: all 0.3s ease;
             width: 100%; margin-top: 15px; display: none;
             animation: pulseBtn 1.5s infinite alternate;
         }
-        .btn-apply:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(0, 230, 118, 0.8); }
+        .btn-apply:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(0, 255, 102, 0.8); }
 
         @keyframes pulseBtn {
-            from { box-shadow: 0 0 10px rgba(0, 230, 118, 0.4); }
-            to { box-shadow: 0 0 22px rgba(0, 230, 118, 0.9); }
+            from { box-shadow: 0 0 10px rgba(0, 255, 102, 0.4); }
+            to { box-shadow: 0 0 22px rgba(0, 255, 102, 0.9); }
         }
 
         .btn-small {
-            background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border-color);
-            color: var(--text-main); padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;
-            transition: all 0.2s; backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
+            color: var(--text-main); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
+            transition: all 0.2s; backdrop-filter: blur(5px); font-weight: 600;
         }
-        .btn-small:hover { background: rgba(255, 255, 255, 0.25); }
+        .btn-small:hover { background: rgba(0, 243, 255, 0.15); border-color: var(--accent-primary); box-shadow: 0 0 10px rgba(0, 243, 255, 0.3); }
 
         /* 🪟 Модальные окна */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75); display: flex; justify-content: center;
-            align-items: center; z-index: 1000; backdrop-filter: blur(10px);
+            background: rgba(4, 4, 10, 0.85); display: flex; justify-content: center;
+            align-items: center; z-index: 1000; backdrop-filter: blur(12px);
             animation: fadeIn 0.3s ease;
         }
 
         .modal {
-            background: var(--bg-chat); padding: 25px; border-radius: 20px;
-            width: 440px; border: 1px solid var(--border-color); text-align: center;
+            background: var(--bg-chat); padding: 25px; border-radius: 18px;
+            width: 450px; border: 1px solid var(--border-color); text-align: center;
             max-height: 90vh; overflow-y: auto; position: relative;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            box-shadow: 0 0 35px rgba(0, 243, 255, 0.15);
             animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+
+        .modal h2 { font-family: 'Orbitron', sans-serif; letter-spacing: 1px; color: var(--accent-primary); margin-bottom: 10px; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes modalPop { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
 
         .modal input, .modal select, .modal textarea {
-            width: 100%; padding: 10px 14px; margin: 6px 0 12px 0; border-radius: 10px;
+            width: 100%; padding: 10px 14px; margin: 6px 0 12px 0; border-radius: 8px;
             border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; outline: none;
+            transition: border 0.2s;
+        }
+        .modal input:focus, .modal select:focus, .modal textarea:focus {
+            border-color: var(--accent-primary); box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
         }
 
-        .modal textarea { resize: none; height: 60px; }
+        .modal textarea { resize: none; height: 65px; }
 
         /* 💬 Контейнер Чата */
         .chat-container {
-            width: 100%; max-width: 800px; height: 92vh; background: var(--bg-chat);
-            backdrop-filter: blur(16px); border-radius: 24px; display: flex;
+            width: 100%; max-width: 850px; height: 90vh; background: var(--bg-chat);
+            backdrop-filter: blur(16px); border-radius: 20px; display: flex;
             flex-direction: column; border: 1px solid var(--border-color); position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6); animation: slideUp 0.6s ease;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 243, 255, 0.1); animation: slideUp 0.6s ease;
         }
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
         .chat-header {
-            padding: 16px 22px; background: rgba(10, 10, 15, 0.6);
+            padding: 16px 24px; background: rgba(8, 8, 16, 0.7);
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border-color); border-radius: 24px 24px 0 0;
+            border-bottom: 1px solid var(--border-color); border-radius: 20px 20px 0 0;
+        }
+
+        .chat-header .title {
+            font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 1.1rem;
+            color: var(--accent-primary); text-shadow: 0 0 8px var(--accent-primary);
         }
 
         .chat-messages {
@@ -182,11 +198,11 @@
 
         /* 📨 Сообщения */
         .message {
-            max-width: 80%; padding: 12px 16px; border-radius: 18px;
-            background: var(--bg-input); align-self: flex-start; word-wrap: break-word;
+            max-width: 75%; padding: 12px 16px; border-radius: 14px;
+            background: rgba(20, 20, 35, 0.75); align-self: flex-start; word-wrap: break-word;
             border: 1px solid rgba(255, 255, 255, 0.08); display: flex; gap: 12px; align-items: flex-start;
             animation: msgAppear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
 
         @keyframes msgAppear {
@@ -195,13 +211,14 @@
         }
 
         .message.my-message {
-            background: linear-gradient(135deg, rgba(30, 45, 65, 0.85), rgba(15, 20, 35, 0.95));
-            align-self: flex-end; border: 1px solid rgba(0, 242, 254, 0.3); flex-direction: row-reverse;
+            background: rgba(25, 15, 38, 0.85);
+            align-self: flex-end; border: 1px solid rgba(255, 0, 85, 0.35); flex-direction: row-reverse;
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.1);
         }
 
         .msg-avatar {
-            width: 42px; height: 42px; border-radius: 50%; object-fit: cover; cursor: pointer;
-            flex-shrink: 0; background: #222; transition: transform 0.2s;
+            width: 44px; height: 44px; border-radius: 50%; object-fit: cover; cursor: pointer;
+            flex-shrink: 0; background: #151520; transition: transform 0.2s;
         }
         .msg-avatar:hover { transform: scale(1.1); }
 
@@ -211,60 +228,52 @@
         .message.my-message .message-header { justify-content: flex-end; }
 
         .message .username { 
-            font-size: 0.85rem; font-weight: bold; color: var(--accent-primary); 
+            font-size: 0.9rem; font-weight: 700; color: var(--accent-primary); 
             display: flex; align-items: center; gap: 6px; cursor: pointer; 
         }
 
-        .msg-time { font-size: 0.68rem; color: var(--text-muted); margin-left: 4px; }
+        .msg-time { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; }
 
         .nitro-badge { 
-            background: linear-gradient(45deg, #ff007f, #7928ca); color: #fff; 
-            font-size: 0.65rem; padding: 2px 6px; border-radius: 6px; font-weight: bold;
-            box-shadow: 0 0 8px rgba(255,0,127,0.5);
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, var(--nitro-color), var(--accent-secondary)); color: #fff; 
+            font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: 800;
+            box-shadow: 0 0 8px rgba(255,0,85,0.6); letter-spacing: 0.5px;
         }
 
-        .message-img { max-width: 100%; max-height: 250px; border-radius: 12px; margin-top: 6px; cursor: pointer; }
+        .message-img { max-width: 100%; max-height: 250px; border-radius: 10px; margin-top: 6px; cursor: pointer; border: 1px solid var(--border-color); }
         .custom-emoji { width: 32px; height: 32px; vertical-align: middle; }
 
         .chat-input-area {
-            padding: 16px; background: rgba(10, 10, 15, 0.7);
-            border-top: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center; position: relative;
-            border-radius: 0 0 24px 24px;
+            padding: 16px 20px; background: rgba(8, 8, 16, 0.7);
+            border-top: 1px solid var(--border-color); display: flex; gap: 12px; align-items: center; position: relative;
+            border-radius: 0 0 20px 20px;
         }
 
         .chat-input-area input[type="text"] {
-            flex: 1; padding: 12px 18px; border-radius: 20px;
+            flex: 1; padding: 12px 18px; border-radius: 10px;
             border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; outline: none;
-            transition: border 0.2s;
+            transition: all 0.2s; font-size: 1rem;
         }
-        .chat-input-area input[type="text"]:focus { border-color: var(--accent-primary); }
+        .chat-input-area input[type="text"]:focus { border-color: var(--accent-primary); box-shadow: 0 0 12px rgba(0, 243, 255, 0.3); }
 
-        /* 🤩 КНОПКА ЭМОДЗИ С АНИМАЦИЕЙ */
+        /* 🤩 КНОПКА ЭМОДЗИ */
         .btn-emoji-icon {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
-            border-radius: 50%;
-            width: 40px; height: 40px;
+            border-radius: 50%; width: 42px; height: 42px;
             display: flex; justify-content: center; align-items: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(5px);
-            padding: 0;
-            outline: none;
+            cursor: pointer; transition: all 0.2s ease;
+            backdrop-filter: blur(5px); padding: 0; outline: none;
         }
 
         .btn-emoji-icon img {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            object-fit: cover;
-            transition: transform 0.2s ease;
+            width: 26px; height: 26px; border-radius: 50%; object-fit: cover; transition: transform 0.2s ease;
         }
 
         .btn-emoji-icon:hover {
-            background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 12px rgba(255, 200, 0, 0.4);
-            transform: scale(1.08);
+            background: rgba(0, 243, 255, 0.15); border-color: var(--accent-primary);
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.4); transform: scale(1.08);
         }
 
         .btn-emoji-icon:active img {
@@ -278,12 +287,12 @@
             100% { transform: scale(1) rotate(0deg); }
         }
 
-        /* 🥳 ПИКТУРА/МЕНЮ ЭМОДЗИ */
+        /* 🥳 ПИКЕР ЭМОДЗИ */
         .emoji-picker {
-            position: absolute; bottom: 75px; left: 16px; background: rgba(20, 20, 28, 0.95);
-            border: 1px solid var(--border-color); border-radius: 18px; padding: 14px;
+            position: absolute; bottom: 80px; left: 20px; background: rgba(12, 12, 24, 0.95);
+            border: 1px solid var(--border-color); border-radius: 14px; padding: 14px;
             display: none; grid-template-columns: repeat(6, 1fr); gap: 10px; z-index: 100; max-height: 240px; overflow-y: auto;
-            backdrop-filter: blur(14px); box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+            backdrop-filter: blur(14px); box-shadow: 0 0 25px rgba(0, 243, 255, 0.2);
             animation: emojiPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
@@ -296,30 +305,26 @@
         .emoji-picker span:hover, .emoji-picker img:hover { transform: scale(1.3); }
 
         .admin-panel { display: flex; flex-direction: column; gap: 10px; text-align: left; }
-        .req-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .req-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
 
         /* 🎴 ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ */
         .profile-card {
-            width: 100%; border-radius: 16px; overflow: hidden; background: #111116; border: 1px solid var(--border-color);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            width: 100%; border-radius: 14px; overflow: hidden; background: #0c0c16; border: 1px solid var(--border-color);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
         }
         .profile-banner {
-            height: 110px; background: linear-gradient(45deg, #222, #444); background-size: cover; background-position: center; position: relative;
+            height: 110px; background: linear-gradient(45deg, #151525, #252540); background-size: cover; background-position: center; position: relative;
         }
-        .profile-avatar-container {
-            position: relative; margin-top: -45px; text-align: center;
-        }
-        .profile-avatar {
-            width: 85px; height: 85px; border-radius: 50%; object-fit: cover; background: #222;
-        }
+        .profile-avatar-container { position: relative; margin-top: -45px; text-align: center; }
+        .profile-avatar { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; background: #111; }
         .profile-info { padding: 16px; text-align: center; }
         .profile-username { font-size: 1.2rem; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 6px; }
-        .profile-bio { font-size: 0.88rem; color: var(--text-muted); margin-top: 8px; font-style: italic; word-break: break-word; }
+        .profile-bio { font-size: 0.9rem; color: var(--text-muted); margin-top: 8px; font-style: italic; word-break: break-word; }
 
         /* ⚠️ Индикатор черновика */
         .draft-notice {
-            background: rgba(255, 179, 0, 0.15); border: 1px solid #ffb300; color: #ffca28;
-            padding: 8px 12px; border-radius: 10px; font-size: 0.75rem; margin-top: 10px; display: none;
+            background: rgba(255, 230, 0, 0.15); border: 1px solid var(--cyber-yellow); color: var(--cyber-yellow);
+            padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; margin-top: 10px; display: none; font-weight: 600;
         }
     </style>
 </head>
@@ -342,10 +347,10 @@
     <!-- Вход / Ник -->
     <div class="modal-overlay" id="nickname-modal" style="display: none;">
         <div class="modal">
-            <h2>Введите ник</h2>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Лимит смены ника: 3 раза в день (Безлимитно для NITRO)</p>
+            <h2>Вход в Сеть</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Лимит смены ника: 3 раза в день (Безлимитно для NITRO)</p>
             <input type="text" id="nickname-input" placeholder="Никнейм..." maxlength="15">
-            <div id="modal-error" style="color: #ff4d4d; font-size: 0.8rem; display:none; margin-bottom: 5px;"></div>
+            <div id="modal-error" style="color: #ff0055; font-size: 0.85rem; display:none; margin-bottom: 5px; font-weight: 700;"></div>
             <button class="glow-button" style="width:100%; margin-top: 10px;" onclick="saveUsername()">Войти</button>
         </div>
     </div>
@@ -373,12 +378,12 @@
 
                 <!-- ⭐ Украшения & Кастомизация Nitro -->
                 <div id="nitro-profile-settings" style="display: none; margin-top: 15px; text-align: left;">
-                    <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold;">⭐ Кастомизация & Украшения Nitro:</span>
+                    <span style="font-size: 0.9rem; color: var(--nitro-color); font-weight: 700;">⭐ Кастомизация & Украшения Nitro:</span>
                     
-                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 8px;">О себе (Описание профиля):</label>
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-top: 8px;">О себе (Описание профиля):</label>
                     <textarea id="my-bio-input" maxlength="100" placeholder="Расскажите о себе..." oninput="updateLivePreview()"></textarea>
                     
-                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Шрифт ника и сообщений:</label>
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: block;">Шрифт ника и сообщений:</label>
                     <select id="my-font-input" onchange="updateLivePreview()">
                         <option value="Roboto">Стандартный (Roboto)</option>
                         <option value="Montserrat">Montserrat (Современный)</option>
@@ -388,15 +393,15 @@
                         <option value="Dancing Script">Dancing Script (Изящный)</option>
                     </select>
 
-                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Цвет ника:</label>
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: block;">Цвет ника:</label>
                     <select id="my-color-type" onchange="toggleColorInput(this.value); updateLivePreview();">
                         <option value="default">Обычный (Голубой)</option>
                         <option value="custom">Свой цвет (HEX/Выбор)</option>
                         <option value="rainbow">🌈 Радужный перелив</option>
                     </select>
-                    <input type="color" id="my-color-picker" style="display:none; height: 35px; cursor:pointer;" value="#00f2fe" oninput="updateLivePreview()">
+                    <input type="color" id="my-color-picker" style="display:none; height: 35px; cursor:pointer;" value="#00f3ff" oninput="updateLivePreview()">
 
-                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Рамка аватарки:</label>
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: block;">Рамка аватарки:</label>
                     <select id="my-frame-input" onchange="updateLivePreview()">
                         <option value="frame-none">Без рамки</option>
                         <option value="frame-neon">💎 Неоновый свет</option>
@@ -405,15 +410,15 @@
                         <option value="frame-gold">👑 Золотой блеск</option>
                     </select>
 
-                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Аватарка (До 1 МБ):</label>
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: block;">Аватарка (До 1 МБ):</label>
                     <input type="file" accept="image/*" onchange="uploadAvatar(event)">
 
-                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Баннер профиля (До 1.5 МБ):</label>
+                    <label style="font-size: 0.8rem; color: var(--text-muted); display: block;">Баннер профиля (До 1.5 МБ):</label>
                     <input type="file" accept="image/*" onchange="uploadBanner(event)">
                 </div>
 
-                <div id="no-nitro-profile-notice" style="display: block; margin-top: 15px; color: var(--text-muted); font-size: 0.8rem;">
-                    🔒 Изменение шрифта, рамок, цвета ника, баннера и описания доступно только владельцам <b style="color:#ff007f;">Nitro</b>.
+                <div id="no-nitro-profile-notice" style="display: block; margin-top: 15px; color: var(--text-muted); font-size: 0.85rem;">
+                    🔒 Изменение шрифта, рамок, цвета ника, баннера и описания доступно только владельцам <b style="color:var(--nitro-color);">Nitro</b>.
                 </div>
             </div>
 
@@ -448,20 +453,20 @@
             <div class="admin-panel" style="margin-top: 15px;">
                 
                 <div id="nitro-requests-sec" style="display:none; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-                    <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold;">⭐ Запросы на NITRO:</span>
+                    <span style="font-size: 0.85rem; color: var(--nitro-color); font-weight: bold;">⭐ Запросы на NITRO:</span>
                     <div id="nitro-requests-list" style="margin-top: 5px;"></div>
 
-                    <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold; margin-top: 10px; display: block;">❌ Управление Nitro (Забрать):</span>
+                    <span style="font-size: 0.85rem; color: var(--nitro-color); font-weight: bold; margin-top: 10px; display: block;">❌ Управление Nitro (Забрать):</span>
                     <div id="active-nitro-list" style="margin-top: 5px;"></div>
                 </div>
 
-                <button class="btn-small" style="background: linear-gradient(45deg, #ff0055, #ff5000); padding: 8px; font-weight: bold;" onclick="toggleAbuseMusic()">💥 АДМИН АБЬЮЗ (Музыка всем)</button>
+                <button class="btn-small" style="background: linear-gradient(135deg, #ff0055, #ff5000); padding: 8px; font-weight: bold; color: #fff;" onclick="toggleAbuseMusic()">💥 АДМИН АБЬЮЗ (Музыка всем)</button>
                 
                 <span style="font-size: 0.85rem; color: var(--accent-primary); font-weight: bold; margin-top:5px;">🎵 Музыка по ссылке (всем):</span>
                 <input type="text" id="audio-link-input" placeholder="Ссылка на MP3/поток...">
                 <div style="display: flex; gap: 5px;">
-                    <button class="btn-small" style="background:#00c853; flex:1;" onclick="playAudioUrl()">🔊 Вкл</button>
-                    <button class="btn-small" style="background:#d50000; flex:1;" onclick="stopAudioUrl()">🔇 Выкл</button>
+                    <button class="btn-small" style="background:#00c853; color:#000; flex:1;" onclick="playAudioUrl()">🔊 Вкл</button>
+                    <button class="btn-small" style="background:#d50000; color:#fff; flex:1;" onclick="stopAudioUrl()">🔇 Выкл</button>
                 </div>
 
                 <hr style="border-color: var(--border-color); margin: 3px 0;">
@@ -478,23 +483,23 @@
                         <option value="86400">24 часа</option>
                         <option value="-1">Навсегда</option>
                     </select>
-                    <button class="btn-small" style="background:#ff4d4d; flex:1;" onclick="banUser()">🚫 Забанить</button>
-                    <button class="btn-small" style="background:#ff9800; flex:1;" onclick="muteUser()">🔇 Замутить</button>
+                    <button class="btn-small" style="background:#ff4d4d; color:#fff; flex:1;" onclick="banUser()">🚫 Забанить</button>
+                    <button class="btn-small" style="background:#ff9800; color:#000; flex:1;" onclick="muteUser()">🔇 Замутить</button>
                 </div>
 
                 <div style="display: flex; gap: 5px; margin-top: 3px;">
-                    <button class="btn-small" style="background:#4caf50; flex:1;" onclick="unbanUser()">🔓 Разбанить</button>
-                    <button class="btn-small" style="background:#00bcd4; flex:1;" onclick="unmuteUser()">🔊 Размутить</button>
+                    <button class="btn-small" style="background:#4caf50; color:#fff; flex:1;" onclick="unbanUser()">🔓 Разбанить</button>
+                    <button class="btn-small" style="background:#00bcd4; color:#000; flex:1;" onclick="unmuteUser()">🔊 Размутить</button>
                 </div>
 
                 <hr style="border-color: var(--border-color); margin: 3px 0;">
 
                 <div style="display: flex; gap: 5px;">
-                    <button class="btn-small" style="background:#9c27b0; flex:1;" onclick="addAdmin()">⭐ Выдать Админку</button>
-                    <button class="btn-small" style="background:#607d8b; flex:1;" onclick="removeAdmin()">❌ Снять Админку</button>
+                    <button class="btn-small" style="background:#9c27b0; color:#fff; flex:1;" onclick="addAdmin()">⭐ Выдать Админку</button>
+                    <button class="btn-small" style="background:#607d8b; color:#fff; flex:1;" onclick="removeAdmin()">❌ Снять Админку</button>
                 </div>
 
-                <button class="btn-small" style="background:#e91e63; width:100%; margin-top:5px;" onclick="clearAllMessages()">🗑️ Очистить весь чат</button>
+                <button class="btn-small" style="background:#e91e63; color:#fff; width:100%; margin-top:5px;" onclick="clearAllMessages()">🗑️ Очистить весь чат</button>
             </div>
             <button class="btn-small" style="width:100%; margin-top: 15px;" onclick="closeAdmin()">Закрыть</button>
         </div>
@@ -504,14 +509,14 @@
     <div class="chat-container">
         <div class="chat-header">
             <div>
-                <span>💬 ЧАТ</span>
-                <span id="user-display" style="font-size: 0.85rem; color: var(--accent-primary); margin-left: 10px;"></span>
+                <span class="title">💬 CYBER_CHAT</span>
+                <span id="user-display" style="font-size: 0.9rem; color: var(--accent-primary); margin-left: 10px; font-weight: bold;"></span>
                 <button class="btn-small" onclick="promptChangeNick()" style="margin-left: 5px;">✏️</button>
                 <button class="btn-small" onclick="openProfile()" style="margin-left: 5px;">⚙️ Профиль</button>
             </div>
             <div style="display: flex; gap: 5px;">
                 <button class="btn-nitro" id="buy-nitro-btn" onclick="requestNitro()">⭐ Купить Nitro</button>
-                <button class="btn-small" id="admin-btn" style="display: none; background: linear-gradient(45deg, #ff007f, #7928ca);" onclick="openAdmin()">👑 Админка</button>
+                <button class="btn-small" id="admin-btn" style="display: none; background: linear-gradient(135deg, var(--nitro-color), var(--accent-secondary)); color: #fff; border:none;" onclick="openAdmin()">👑 Админка</button>
             </div>
         </div>
 
@@ -526,7 +531,7 @@
             </div>
             <div id="custom-emojis-container" style="display: contents;"></div>
             
-            <label id="add-custom-emoji-btn" style="display:none; grid-column: span 6; background: rgba(255,0,127,0.2); border: 1px dashed #ff007f; border-radius: 8px; padding: 5px; cursor: pointer; text-align: center; font-size: 0.75rem; margin-top: 5px;">
+            <label id="add-custom-emoji-btn" style="display:none; grid-column: span 6; background: rgba(255,0,85,0.15); border: 1px dashed var(--nitro-color); border-radius: 8px; padding: 6px; cursor: pointer; text-align: center; font-size: 0.8rem; margin-top: 5px; color: var(--nitro-color); font-weight: bold;">
                 ➕ Добавить свой Nitro-эмодзи
                 <input type="file" accept="image/*" style="display:none;" onchange="uploadCustomEmoji(event)">
             </label>
@@ -538,7 +543,7 @@
                 <img src="./emoji-icon.png" alt="Emoji">
             </button>
             
-            <label class="btn-small" style="font-size: 1.1rem; padding: 6px 10px; cursor: pointer;" title="Отправить картинку или файл">
+            <label class="btn-small" style="font-size: 1.1rem; padding: 8px 12px; cursor: pointer;" title="Отправить картинку или файл">
                 📎
                 <input type="file" id="file-input" style="display: none;" onchange="sendFile(event)">
             </label>
@@ -546,7 +551,7 @@
             <input type="text" id="message-input" placeholder="Напишите сообщение..." onkeypress="if(event.key==='Enter') sendMessage()">
             <button class="glow-button" id="send-btn" onclick="sendMessage()">Отправить</button>
         </div>
-        <div id="mute-notice" style="display:none; padding:15px; text-align:center; color:#ff4d4d; background: rgba(0,0,0,0.5);">
+        <div id="mute-notice" style="display:none; padding:15px; text-align:center; color:#ff4d4d; background: rgba(0,0,0,0.6); font-weight: bold;">
             🔇 Вы замучены!
         </div>
     </div>
@@ -777,7 +782,7 @@
             if (prof.banner) {
                 bannerDiv.style.backgroundImage = `url('${prof.banner}')`;
             } else {
-                bannerDiv.style.backgroundImage = 'linear-gradient(45deg, #222, #444)';
+                bannerDiv.style.backgroundImage = 'linear-gradient(45deg, #151525, #252540)';
             }
 
             let badge = isNitroUser ? `<span class="nitro-badge">NITRO</span>` : '';
@@ -869,7 +874,7 @@
             if (prof.banner) {
                 bannerDiv.style.backgroundImage = `url('${prof.banner}')`;
             } else {
-                bannerDiv.style.backgroundImage = 'linear-gradient(45deg, #222, #444)';
+                bannerDiv.style.backgroundImage = 'linear-gradient(45deg, #151525, #252540)';
             }
 
             let badge = targetIsNitro ? `<span class="nitro-badge">NITRO</span>` : '';
@@ -907,7 +912,7 @@
                     noNitroNotice.style.display = "none";
                 } else {
                     buyBtn.innerText = "⭐ Купить Nitro";
-                    buyBtn.style.background = "linear-gradient(45deg, #ff007f, #7928ca)";
+                    buyBtn.style.background = "linear-gradient(135deg, var(--nitro-color), var(--accent-secondary))";
                     addEmojiBtn.style.display = "none";
                     nitroProfileSettings.style.display = "none";
                     noNitroNotice.style.display = "block";
@@ -946,7 +951,7 @@
                 const list = document.getElementById('nitro-requests-list');
                 list.innerHTML = '';
                 if (!snap.exists()) {
-                    list.innerHTML = '<span style="font-size:0.75rem; color:gray;">Нет запросов</span>';
+                    list.innerHTML = '<span style="font-size:0.8rem; color:gray;">Нет запросов</span>';
                     return;
                 }
 
@@ -955,10 +960,10 @@
                     const div = document.createElement('div');
                     div.className = 'req-card';
                     div.innerHTML = `
-                        <span style="font-size:0.8rem;">@${reqUser}</span>
+                        <span style="font-size:0.85rem;">@${reqUser}</span>
                         <div>
-                            <button class="btn-small" style="background:#00c853;" onclick="approveNitro('${reqUser}')">Да</button>
-                            <button class="btn-small" style="background:#d50000;" onclick="rejectNitro('${reqUser}')">Нет</button>
+                            <button class="btn-small" style="background:#00c853; color:#000;" onclick="approveNitro('${reqUser}')">Да</button>
+                            <button class="btn-small" style="background:#d50000; color:#fff;" onclick="rejectNitro('${reqUser}')">Нет</button>
                         </div>
                     `;
                     list.appendChild(div);
@@ -971,7 +976,7 @@
                 const list = document.getElementById('active-nitro-list');
                 list.innerHTML = '';
                 if (!snap.exists()) {
-                    list.innerHTML = '<span style="font-size:0.75rem; color:gray;">Нет пользователей с Nitro</span>';
+                    list.innerHTML = '<span style="font-size:0.8rem; color:gray;">Нет пользователей с Nitro</span>';
                     return;
                 }
 
@@ -981,8 +986,8 @@
                         const div = document.createElement('div');
                         div.className = 'req-card';
                         div.innerHTML = `
-                            <span style="font-size:0.8rem; color:#ff007f;">⭐ @${nitroUser}</span>
-                            <button class="btn-small" style="background:#d50000;" onclick="revokeNitro('${nitroUser}')">❌ Забрать Nitro</button>
+                            <span style="font-size:0.85rem; color:var(--nitro-color); font-weight:bold;">⭐ @${nitroUser}</span>
+                            <button class="btn-small" style="background:#d50000; color:#fff;" onclick="revokeNitro('${nitroUser}')">❌ Забрать Nitro</button>
                         `;
                         list.appendChild(div);
                     }
@@ -1168,7 +1173,7 @@
                 } else if (data.fileType === 'custom_emoji') {
                     html += `<img src="${data.file}" class="custom-emoji">`;
                 } else {
-                    html += `<a href="${data.file}" download="${data.fileName}" style="color:var(--accent-primary); font-size:0.85rem;">📄 ${data.fileName}</a>`;
+                    html += `<a href="${data.file}" download="${data.fileName}" style="color:var(--accent-primary); font-size:0.9rem;">📄 ${data.fileName}</a>`;
                 }
             }
 
@@ -1185,7 +1190,7 @@
                     const now = Date.now();
                     if (banData.until === -1 || banData.until > now) {
                         const dateStr = banData.until === -1 ? "Навсегда" : new Date(banData.until).toLocaleString();
-                        document.body.innerHTML = `<h1 style="color:white; text-align:center; margin-top:20%;">🚫 ВЫ ЗАБАНЕНЫ<br><br><span style="font-size:18px;">Причина: ${banData.reason}<br>Истекает: ${dateStr}</span></h1>`;
+                        document.body.innerHTML = `<h1 style="color:#ff0055; text-align:center; font-family:'Orbitron', sans-serif; margin-top:20%;">🚫 ВЫ ЗАБАНЕНЫ<br><br><span style="font-size:18px; color:#fff;">Причина: ${banData.reason}<br>Истекает: ${dateStr}</span></h1>`;
                     }
                 }
             });
