@@ -90,10 +90,12 @@
             max-height: 90vh; overflow-y: auto; position: relative;
         }
 
-        .modal input, .modal select {
+        .modal input, .modal select, .modal textarea {
             width: 100%; padding: 8px 12px; margin: 4px 0 10px 0; border-radius: 8px;
             border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; outline: none;
         }
+
+        .modal textarea { resize: none; height: 60px; }
 
         .chat-container {
             width: 100%; max-width: 750px; height: 90vh; background: var(--bg-chat);
@@ -129,10 +131,23 @@
 
         .msg-content { flex: 1; }
 
+        .message-header {
+            display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+        }
+
+        .message.my-message .message-header {
+            justify-content: flex-end;
+        }
+
         .message .username { 
             font-size: 0.75rem; font-weight: bold; color: var(--accent-primary); 
-            margin-bottom: 4px; display: flex; align-items: center; gap: 4px; cursor: pointer; 
+            display: flex; align-items: center; gap: 4px; cursor: pointer; 
         }
+
+        .msg-time {
+            font-size: 0.65rem; color: var(--text-muted); margin-left: 4px;
+        }
+
         .nitro-badge { background: linear-gradient(45deg, #ff007f, #7928ca); color: #fff; font-size: 0.65rem; padding: 1px 5px; border-radius: 6px; }
 
         .message-img { max-width: 100%; max-height: 250px; border-radius: 8px; margin-top: 5px; cursor: pointer; }
@@ -175,6 +190,7 @@
         }
         .profile-info { padding: 15px; text-align: center; }
         .profile-username { font-size: 1.1rem; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 6px; }
+        .profile-bio { font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; font-style: italic; word-break: break-word; }
     </style>
 </head>
 <body>
@@ -216,6 +232,7 @@
                     </div>
                     <div class="profile-info">
                         <div class="profile-username" id="my-profile-name"></div>
+                        <div class="profile-bio" id="my-profile-bio-preview">О себе не указано</div>
                     </div>
                 </div>
 
@@ -223,6 +240,10 @@
                 <div id="nitro-profile-settings" style="display: none; margin-top: 15px; text-align: left;">
                     <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold;">⭐ Кастомизация Nitro:</span>
                     
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 8px;">О себе (Описание профиля):</label>
+                    <textarea id="my-bio-input" maxlength="100" placeholder="Расскажите о себе..."></textarea>
+                    <button class="btn-small" style="background:#ff007f; width:100%; margin-bottom:10px;" onclick="saveBio()">Сохранить описание</button>
+
                     <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 8px;">Аватарка (До 1 МБ):</label>
                     <input type="file" accept="image/*" onchange="uploadAvatar(event)">
 
@@ -231,7 +252,7 @@
                 </div>
 
                 <div id="no-nitro-profile-notice" style="display: block; margin-top: 15px; color: var(--text-muted); font-size: 0.8rem;">
-                    🔒 Изменение баннера и аватарки доступно только владельцам <b style="color:#ff007f;">Nitro</b>.
+                    🔒 Изменение описания, баннера и аватарки доступно только владельцам <b style="color:#ff007f;">Nitro</b>.
                 </div>
             </div>
             <button class="btn-small" style="width:100%; margin-top: 15px;" onclick="closeProfile()">Закрыть</button>
@@ -248,6 +269,7 @@
                 </div>
                 <div class="profile-info">
                     <div class="profile-username" id="view-user-name"></div>
+                    <div class="profile-bio" id="view-user-bio">О себе не указано</div>
                 </div>
             </div>
             <button class="btn-small" style="width:100%; margin-top: 15px;" onclick="closeViewProfile()">Закрыть</button>
@@ -520,6 +542,8 @@
             const avatarImg = document.getElementById('my-profile-avatar-preview');
             const bannerDiv = document.getElementById('my-profile-banner-preview');
             const nameDiv = document.getElementById('my-profile-name');
+            const bioDiv = document.getElementById('my-profile-bio-preview');
+            const bioInput = document.getElementById('my-bio-input');
 
             avatarImg.src = prof.avatar || "https://via.placeholder.com/80";
             if (prof.banner) {
@@ -530,6 +554,15 @@
 
             let badge = isNitroUser ? `<span class="nitro-badge">NITRO</span>` : '';
             nameDiv.innerHTML = `@${currentUser} ${badge}`;
+            bioDiv.innerText = prof.bio || "О себе не указано";
+            if(bioInput && prof.bio) bioInput.value = prof.bio;
+        }
+
+        function saveBio() {
+            if (!isNitroUser) { alert("Только для пользователей Nitro!"); return; }
+            const bioText = document.getElementById('my-bio-input').value.trim();
+            userProfilesRef.child(currentUser.toLowerCase()).child('bio').set(bioText);
+            alert("Описание профиля успешно обновлено!");
         }
 
         function uploadAvatar(e) {
@@ -567,6 +600,7 @@
             const bannerDiv = document.getElementById('view-user-banner');
             const avatarImg = document.getElementById('view-user-avatar');
             const nameDiv = document.getElementById('view-user-name');
+            const bioDiv = document.getElementById('view-user-bio');
 
             avatarImg.src = prof.avatar || "https://via.placeholder.com/80";
             if (prof.banner) {
@@ -577,6 +611,7 @@
 
             let badge = targetIsNitro ? `<span class="nitro-badge">NITRO</span>` : '';
             nameDiv.innerHTML = `@${username} ${badge}`;
+            bioDiv.innerText = prof.bio || "О себе не указано";
 
             document.getElementById('view-profile-modal').style.display = 'flex';
         }
@@ -852,10 +887,20 @@
 
             let nitroBadge = data.isNitro ? `<span class="nitro-badge">NITRO</span>` : '';
             
+            // ВРЕМЯ ОТПРАВКИ
+            const date = new Date(data.timestamp || Date.now());
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const timeStr = `${hours}:${minutes}`;
+
             let html = `
                 <img src="${avatarSrc}" class="msg-avatar" onclick="viewUserProfile('${data.user}')">
                 <div class="msg-content">
-                    <div class="username" onclick="viewUserProfile('${data.user}')">${data.user} ${nitroBadge}</div>
+                    <div class="message-header">
+                        <span class="username" onclick="viewUserProfile('${data.user}')">${data.user}</span>
+                        ${nitroBadge}
+                        <span class="msg-time">${timeStr}</span>
+                    </div>
             `;
             
             if (data.text) html += `<div>${data.text}</div>`;
@@ -877,7 +922,6 @@
 
         // --- 🔒 БАНЫ И МУТЫ ---
         function listenForMuteAndBan() {
-            // ПРОВЕРКА БАНА
             bansRef.child(currentUser.toLowerCase()).on('value', (snap) => {
                 if (snap.exists()) {
                     const banData = snap.val();
@@ -890,7 +934,6 @@
                 }
             });
 
-            // ПРОВЕРКА МУТА
             mutesRef.child(currentUser.toLowerCase()).on('value', (snap) => {
                 const inputArea = document.getElementById('input-area');
                 const muteNotice = document.getElementById('mute-notice');
