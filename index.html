@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-    <!-- Подключаем красивейшие шрифты Google Fonts -->
+    <!-- Подключаем шрифты Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@600;800&family=Pacifico&family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -145,7 +145,7 @@
 
         .modal textarea { resize: none; height: 60px; }
 
-        /* 💬 Контейнер Чота */
+        /* 💬 Контейнер Чата */
         .chat-container {
             width: 100%; max-width: 800px; height: 92vh; background: var(--bg-chat);
             backdrop-filter: blur(16px); border-radius: 24px; display: flex;
@@ -165,7 +165,7 @@
             flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
         }
 
-        /* 📨 Анимация сообщений */
+        /* 📨 Сообщения */
         .message {
             max-width: 80%; padding: 12px 16px; border-radius: 18px;
             background: var(--bg-input); align-self: flex-start; word-wrap: break-word;
@@ -254,6 +254,12 @@
         .profile-info { padding: 16px; text-align: center; }
         .profile-username { font-size: 1.2rem; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 6px; }
         .profile-bio { font-size: 0.88rem; color: var(--text-muted); margin-top: 8px; font-style: italic; word-break: break-word; }
+
+        /* ⚠️ Индикатор черновика */
+        .draft-notice {
+            background: rgba(255, 179, 0, 0.15); border: 1px solid #ffb300; color: #ffca28;
+            padding: 8px 12px; border-radius: 10px; font-size: 0.75rem; margin-top: 10px; display: none;
+        }
     </style>
 </head>
 <body>
@@ -287,6 +293,11 @@
     <div class="modal-overlay" id="profile-modal" style="display: none;">
         <div class="modal">
             <h2>⚙️ Настройки Профиля</h2>
+            
+            <div id="profile-draft-warning" class="draft-notice">
+                ⚠️ У вас есть несохраненные изменения! Нажмите <b>Сохранить</b>, чтобы они появились у остальных.
+            </div>
+
             <div style="margin-top: 15px;">
                 <div class="profile-card">
                     <div class="profile-banner" id="my-profile-banner-preview"></div>
@@ -304,10 +315,10 @@
                     <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold;">⭐ Кастомизация & Украшения Nitro:</span>
                     
                     <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 8px;">О себе (Описание профиля):</label>
-                    <textarea id="my-bio-input" maxlength="100" placeholder="Расскажите о себе..."></textarea>
+                    <textarea id="my-bio-input" maxlength="100" placeholder="Расскажите о себе..." oninput="updateLivePreview()"></textarea>
                     
                     <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Шрифт ника и сообщений:</label>
-                    <select id="my-font-input">
+                    <select id="my-font-input" onchange="updateLivePreview()">
                         <option value="Roboto">Стандартный (Roboto)</option>
                         <option value="Montserrat">Montserrat (Современный)</option>
                         <option value="Orbitron">Orbitron (Киберпанк/Неон)</option>
@@ -317,15 +328,15 @@
                     </select>
 
                     <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Цвет ника:</label>
-                    <select id="my-color-type" onchange="toggleColorInput(this.value)">
+                    <select id="my-color-type" onchange="toggleColorInput(this.value); updateLivePreview();">
                         <option value="default">Обычный (Голубой)</option>
                         <option value="custom">Свой цвет (HEX/Выбор)</option>
                         <option value="rainbow">🌈 Радужный перелив</option>
                     </select>
-                    <input type="color" id="my-color-picker" style="display:none; height: 35px; cursor:pointer;" value="#00f2fe">
+                    <input type="color" id="my-color-picker" style="display:none; height: 35px; cursor:pointer;" value="#00f2fe" oninput="updateLivePreview()">
 
                     <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Рамка аватарки:</label>
-                    <select id="my-frame-input">
+                    <select id="my-frame-input" onchange="updateLivePreview()">
                         <option value="frame-none">Без рамки</option>
                         <option value="frame-neon">💎 Неоновый свет</option>
                         <option value="frame-rainbow">🌈 Радужный градиент</option>
@@ -505,6 +516,7 @@
         let currentUser = localStorage.getItem('chat_username') || "";
         let isCooldown = false;
         let isNitroUser = false;
+        let hasUnsavedProfileChanges = false; // Флаг несохраненных изменений
         let nickHistory = JSON.parse(localStorage.getItem('chat_nick_history') || "[]");
         let cachedProfiles = {};
 
@@ -516,6 +528,14 @@
             }
             showAdOnce();
         };
+
+        // Защита от случайного закрытия вкладки при несохраненных данных
+        window.addEventListener('beforeunload', (e) => {
+            if (hasUnsavedProfileChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
 
         function showAdOnce() {
             setTimeout(() => {
@@ -532,7 +552,7 @@
         }
 
         function openDiscordAd() {
-            window.open('https://market.yandex.ru/card/podpiska-discord-nitro-na-1-god-discord-mac-pc-smartfon-region-aktivatsii-rf/103277808298?utm_source_service=img&icookie=TRZDGYScPai3eeDij0GNhozUnQlgQnUT7C%2FYIG5oMUsEEv2KTca38imKtB9R%2BfMeHXqDIlaLj2VumpmvHlhKiWTjGgY%3D&wprid=1785616764705052-10074917918640945720-balancer-l7leveler-kubr-yp-sas-126-BAL&src_pof=972', '_blank');
+            window.open('https://market.yandex.ru/card/podpiska-discord-nitro-na-1-god-discord-mac-pc-smartfon-region-aktivatsii-rf/103277808298', '_blank');
         }
 
         function openAviasalesAd() {
@@ -612,7 +632,6 @@
             userProfilesRef.on('value', (snap) => {
                 cachedProfiles = snap.val() || {};
                 renderUserProfilePreview();
-                // Перерисовать сообщения, чтобы применить обновленные шрифты/стили
                 messagesRef.limitToLast(50).once('value', (snapshot) => {
                     const container = document.getElementById('chat-messages');
                     container.innerHTML = '';
@@ -622,17 +641,54 @@
         }
 
         function openProfile() {
+            hasUnsavedProfileChanges = false;
+            document.getElementById('profile-draft-warning').style.display = 'none';
             renderUserProfilePreview();
             document.getElementById('profile-modal').style.display = 'flex';
         }
 
         function closeProfile() {
+            if (hasUnsavedProfileChanges) {
+                if (!confirm("У вас есть несохраненные изменения! Закрыть без сохранения?")) {
+                    return;
+                }
+            }
+            hasUnsavedProfileChanges = false;
             document.getElementById('profile-modal').style.display = 'none';
         }
 
         function toggleColorInput(val) {
             const picker = document.getElementById('my-color-picker');
             picker.style.display = val === 'custom' ? 'block' : 'none';
+        }
+
+        /* Мгновенный визуальный предпросмотр (Черновик) */
+        function updateLivePreview() {
+            hasUnsavedProfileChanges = true;
+            document.getElementById('profile-draft-warning').style.display = 'block';
+
+            const bioVal = document.getElementById('my-bio-input').value.trim();
+            const fontVal = document.getElementById('my-font-input').value;
+            const frameVal = document.getElementById('my-frame-input').value;
+            const colorType = document.getElementById('my-color-type').value;
+            const colorVal = document.getElementById('my-color-picker').value;
+
+            const avatarImg = document.getElementById('my-profile-avatar-preview');
+            const nameDiv = document.getElementById('my-profile-name');
+            const bioDiv = document.getElementById('my-profile-bio-preview');
+
+            avatarImg.className = `profile-avatar ${frameVal}`;
+
+            let badge = isNitroUser ? `<span class="nitro-badge">NITRO</span>` : '';
+            let nameStyle = "";
+            let nameClass = "";
+            if (colorType === 'rainbow') nameClass = "rainbow-text";
+            else if (colorType === 'custom' && colorVal) nameStyle = `color: ${colorVal};`;
+            
+            if (fontVal) nameStyle += ` font-family: '${fontVal}', sans-serif;`;
+
+            nameDiv.innerHTML = `<span class="${nameClass}" style="${nameStyle}">@${currentUser}</span> ${badge}`;
+            bioDiv.innerText = bioVal || "О себе не указано";
         }
 
         function renderUserProfilePreview() {
@@ -669,16 +725,17 @@
             nameDiv.innerHTML = `<span class="${nameClass}" style="${nameStyle}">@${currentUser}</span> ${badge}`;
             bioDiv.innerText = prof.bio || "О себе не указано";
 
-            if (bioInput && prof.bio) bioInput.value = prof.bio;
-            if (fontSelect && prof.font) fontSelect.value = prof.font;
-            if (frameSelect && prof.frame) frameSelect.value = prof.frame;
-            if (colorSelect && prof.colorType) {
-                colorSelect.value = prof.colorType;
-                toggleColorInput(prof.colorType);
-                if (prof.colorVal) colorPicker.value = prof.colorVal;
+            if (bioInput) bioInput.value = prof.bio || '';
+            if (fontSelect) fontSelect.value = prof.font || 'Roboto';
+            if (frameSelect) frameSelect.value = prof.frame || 'frame-none';
+            if (colorSelect) {
+                colorSelect.value = prof.colorType || 'default';
+                toggleColorInput(prof.colorType || 'default');
+                if (prof.colorVal && colorPicker) colorPicker.value = prof.colorVal;
             }
         }
 
+        /* Сохранение официальных изменений в Базу Данных */
         function saveNitroStyle() {
             if (!isNitroUser) { alert("Только для Nitro!"); return; }
             
@@ -694,9 +751,11 @@
                 frame: frame,
                 colorType: colorType,
                 colorVal: colorVal
+            }).then(() => {
+                hasUnsavedProfileChanges = false;
+                document.getElementById('profile-draft-warning').style.display = 'none';
+                alert("✨ Украшения профиля успешно сохранены!");
             });
-
-            alert("✨ Украшения профиля сохранены!");
         }
 
         function uploadAvatar(e) {
@@ -1009,20 +1068,17 @@
 
             let nitroBadge = data.isNitro ? `<span class="nitro-badge">NITRO</span>` : '';
             
-            // Время отправки
             const date = new Date(data.timestamp || Date.now());
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             const timeStr = `${hours}:${minutes}`;
 
-            // Применение стиля ника
             let nameStyle = "";
             let nameClass = "";
             if (userProf.colorType === 'rainbow') nameClass = "rainbow-text";
             else if (userProf.colorType === 'custom' && userProf.colorVal) nameStyle = `color: ${userProf.colorVal};`;
             if (userProf.font) nameStyle += ` font-family: '${userProf.font}', sans-serif;`;
 
-            // Применение шрифта сообщения
             let msgStyle = userProf.font ? `font-family: '${userProf.font}', sans-serif;` : '';
 
             let html = `
