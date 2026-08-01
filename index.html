@@ -87,7 +87,7 @@
         .modal {
             background: var(--bg-chat); padding: 25px; border-radius: 16px;
             width: 420px; border: 1px solid var(--border-color); text-align: center;
-            max-height: 90vh; overflow-y: auto;
+            max-height: 90vh; overflow-y: auto; position: relative;
         }
 
         .modal input, .modal select {
@@ -114,15 +114,25 @@
         .message {
             max-width: 75%; padding: 10px 14px; border-radius: 14px;
             background: var(--bg-input); align-self: flex-start; word-wrap: break-word;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08); display: flex; gap: 10px; align-items: flex-start;
         }
 
         .message.my-message {
             background: linear-gradient(135deg, rgba(45,45,55,0.9), rgba(20,25,35,0.9));
-            align-self: flex-end; border: 1px solid rgba(0, 242, 254, 0.4);
+            align-self: flex-end; border: 1px solid rgba(0, 242, 254, 0.4); flex-direction: row-reverse;
         }
 
-        .message .username { font-size: 0.75rem; font-weight: bold; color: var(--accent-primary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;}
+        .msg-avatar {
+            width: 36px; height: 36px; border-radius: 50%; object-fit: cover; cursor: pointer;
+            border: 1px solid var(--border-color); flex-shrink: 0; background: #222;
+        }
+
+        .msg-content { flex: 1; }
+
+        .message .username { 
+            font-size: 0.75rem; font-weight: bold; color: var(--accent-primary); 
+            margin-bottom: 4px; display: flex; align-items: center; gap: 4px; cursor: pointer; 
+        }
         .nitro-badge { background: linear-gradient(45deg, #ff007f, #7928ca); color: #fff; font-size: 0.65rem; padding: 1px 5px; border-radius: 6px; }
 
         .message-img { max-width: 100%; max-height: 250px; border-radius: 8px; margin-top: 5px; cursor: pointer; }
@@ -149,6 +159,22 @@
 
         .admin-panel { display: flex; flex-direction: column; gap: 8px; text-align: left; }
         .req-card { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* 🎴 ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ */
+        .profile-card {
+            width: 100%; border-radius: 12px; overflow: hidden; background: #111116; border: 1px solid var(--border-color);
+        }
+        .profile-banner {
+            height: 100px; background: linear-gradient(45deg, #222, #444); background-size: cover; background-position: center; position: relative;
+        }
+        .profile-avatar-container {
+            position: relative; margin-top: -40px; text-align: center;
+        }
+        .profile-avatar {
+            width: 80px; height: 80px; border-radius: 50%; border: 3px solid #111116; object-fit: cover; background: #222;
+        }
+        .profile-info { padding: 15px; text-align: center; }
+        .profile-username { font-size: 1.1rem; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 6px; }
     </style>
 </head>
 <body>
@@ -178,6 +204,56 @@
         </div>
     </div>
 
+    <!-- ⚙️ МОДАЛЬНОЕ ОКНО НАСТРОЕК ПРОФИЛЯ -->
+    <div class="modal-overlay" id="profile-modal" style="display: none;">
+        <div class="modal">
+            <h2>⚙️ Настройки Профиля</h2>
+            <div style="margin-top: 15px;">
+                <div class="profile-card">
+                    <div class="profile-banner" id="my-profile-banner-preview"></div>
+                    <div class="profile-avatar-container">
+                        <img class="profile-avatar" id="my-profile-avatar-preview" src="https://via.placeholder.com/80" alt="Avatar">
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-username" id="my-profile-name"></div>
+                    </div>
+                </div>
+
+                <!-- Настройки только для NITRO -->
+                <div id="nitro-profile-settings" style="display: none; margin-top: 15px; text-align: left;">
+                    <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold;">⭐ Кастомизация Nitro:</span>
+                    
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 8px;">Аватарка (До 1 МБ):</label>
+                    <input type="file" accept="image/*" onchange="uploadAvatar(event)">
+
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 8px;">Баннер профиля (До 1.5 МБ):</label>
+                    <input type="file" accept="image/*" onchange="uploadBanner(event)">
+                </div>
+
+                <div id="no-nitro-profile-notice" style="display: block; margin-top: 15px; color: var(--text-muted); font-size: 0.8rem;">
+                    🔒 Изменение баннера и аватарки доступно только владельцам <b style="color:#ff007f;">Nitro</b>.
+                </div>
+            </div>
+            <button class="btn-small" style="width:100%; margin-top: 15px;" onclick="closeProfile()">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- 👤 ПРОСМОТР ЧУЖОГО ПРОФИЛЯ -->
+    <div class="modal-overlay" id="view-profile-modal" style="display: none;">
+        <div class="modal">
+            <div class="profile-card">
+                <div class="profile-banner" id="view-user-banner"></div>
+                <div class="profile-avatar-container">
+                    <img class="profile-avatar" id="view-user-avatar" src="https://via.placeholder.com/80" alt="Avatar">
+                </div>
+                <div class="profile-info">
+                    <div class="profile-username" id="view-user-name"></div>
+                </div>
+            </div>
+            <button class="btn-small" style="width:100%; margin-top: 15px;" onclick="closeViewProfile()">Закрыть</button>
+        </div>
+    </div>
+
     <!-- 👑 АДМИН ПАНЕЛЬ -->
     <div class="modal-overlay" id="admin-modal" style="display: none;">
         <div class="modal">
@@ -188,6 +264,9 @@
                 <div id="nitro-requests-sec" style="display:none; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
                     <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold;">⭐ Запросы на NITRO:</span>
                     <div id="nitro-requests-list" style="margin-top: 5px;"></div>
+
+                    <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold; margin-top: 10px; display: block;">❌ Управление Nitro (Забрать):</span>
+                    <div id="active-nitro-list" style="margin-top: 5px;"></div>
                 </div>
 
                 <button class="btn-small" style="background: linear-gradient(45deg, #ff0055, #ff5000); padding: 8px; font-weight: bold;" onclick="toggleAbuseMusic()">💥 АДМИН АБЬЮЗ (Музыка всем)</button>
@@ -243,6 +322,7 @@
                 <span>💬 ЧАТ</span>
                 <span id="user-display" style="font-size: 0.85rem; color: var(--accent-primary); margin-left: 10px;"></span>
                 <button class="btn-small" onclick="promptChangeNick()" style="margin-left: 5px;">✏️</button>
+                <button class="btn-small" onclick="openProfile()" style="margin-left: 5px;">⚙️ Профиль</button>
             </div>
             <div style="display: flex; gap: 5px;">
                 <button class="btn-nitro" id="buy-nitro-btn" onclick="requestNitro()">⭐ Купить Nitro</button>
@@ -306,6 +386,7 @@
         const customEmojisRef = database.ref('custom_emojis');
         const resetNickRef = database.ref('resetNickRequests');
         const usersRef = database.ref('users');
+        const userProfilesRef = database.ref('user_profiles');
         const musicRef = database.ref('admin_music');
         const adminsRef = database.ref('admins');
         const audioStreamRef = database.ref('admin_audio_stream');
@@ -316,6 +397,7 @@
         let isCooldown = false;
         let isNitroUser = false;
         let nickHistory = JSON.parse(localStorage.getItem('chat_nick_history') || "[]");
+        let cachedProfiles = {};
 
         window.onload = function() {
             if (!currentUser) {
@@ -407,6 +489,7 @@
             checkAdminRights();
             checkNitroStatus();
 
+            listenForProfiles();
             listenForMessages();
             listenForAdminResets();
             listenForMusic();
@@ -415,22 +498,116 @@
             loadCustomEmojis();
         }
 
+        // --- 👤 НАСТРОЙКИ И ПРОСМОТР ПРОФИЛЯ ---
+        function listenForProfiles() {
+            userProfilesRef.on('value', (snap) => {
+                cachedProfiles = snap.val() || {};
+                renderUserProfilePreview();
+            });
+        }
+
+        function openProfile() {
+            renderUserProfilePreview();
+            document.getElementById('profile-modal').style.display = 'flex';
+        }
+
+        function closeProfile() {
+            document.getElementById('profile-modal').style.display = 'none';
+        }
+
+        function renderUserProfilePreview() {
+            const prof = cachedProfiles[currentUser.toLowerCase()] || {};
+            const avatarImg = document.getElementById('my-profile-avatar-preview');
+            const bannerDiv = document.getElementById('my-profile-banner-preview');
+            const nameDiv = document.getElementById('my-profile-name');
+
+            avatarImg.src = prof.avatar || "https://via.placeholder.com/80";
+            if (prof.banner) {
+                bannerDiv.style.backgroundImage = `url('${prof.banner}')`;
+            } else {
+                bannerDiv.style.backgroundImage = 'linear-gradient(45deg, #222, #444)';
+            }
+
+            let badge = isNitroUser ? `<span class="nitro-badge">NITRO</span>` : '';
+            nameDiv.innerHTML = `@${currentUser} ${badge}`;
+        }
+
+        function uploadAvatar(e) {
+            if (!isNitroUser) { alert("Только для пользователей Nitro!"); return; }
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.size > 1 * 1024 * 1024) { alert("Аватарка слишком большая! До 1 МБ."); return; }
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                userProfilesRef.child(currentUser.toLowerCase()).child('avatar').set(evt.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function uploadBanner(e) {
+            if (!isNitroUser) { alert("Только для пользователей Nitro!"); return; }
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.size > 1.5 * 1024 * 1024) { alert("Баннер слишком большой! До 1.5 МБ."); return; }
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                userProfilesRef.child(currentUser.toLowerCase()).child('banner').set(evt.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function viewUserProfile(username) {
+            const lower = username.toLowerCase();
+            const prof = cachedProfiles[lower] || {};
+            const isNitroSnap = await nitroRef.child(lower).once('value');
+            const targetIsNitro = isNitroSnap.exists() && isNitroSnap.val() === true;
+
+            const bannerDiv = document.getElementById('view-user-banner');
+            const avatarImg = document.getElementById('view-user-avatar');
+            const nameDiv = document.getElementById('view-user-name');
+
+            avatarImg.src = prof.avatar || "https://via.placeholder.com/80";
+            if (prof.banner) {
+                bannerDiv.style.backgroundImage = `url('${prof.banner}')`;
+            } else {
+                bannerDiv.style.backgroundImage = 'linear-gradient(45deg, #222, #444)';
+            }
+
+            let badge = targetIsNitro ? `<span class="nitro-badge">NITRO</span>` : '';
+            nameDiv.innerHTML = `@${username} ${badge}`;
+
+            document.getElementById('view-profile-modal').style.display = 'flex';
+        }
+
+        function closeViewProfile() {
+            document.getElementById('view-profile-modal').style.display = 'none';
+        }
+
         // --- ⭐ NITRO ЛОГИКА ---
         function checkNitroStatus() {
             nitroRef.child(currentUser.toLowerCase()).on('value', (snap) => {
                 isNitroUser = snap.exists() && snap.val() === true;
                 const buyBtn = document.getElementById('buy-nitro-btn');
                 const addEmojiBtn = document.getElementById('add-custom-emoji-btn');
+                const nitroProfileSettings = document.getElementById('nitro-profile-settings');
+                const noNitroNotice = document.getElementById('no-nitro-profile-notice');
                 
                 if (isNitroUser) {
                     buyBtn.innerText = "⭐ NITRO АКТИВЕН";
                     buyBtn.style.background = "#00c853";
                     addEmojiBtn.style.display = "block";
+                    nitroProfileSettings.style.display = "block";
+                    noNitroNotice.style.display = "none";
                 } else {
                     buyBtn.innerText = "⭐ Купить Nitro";
                     buyBtn.style.background = "linear-gradient(45deg, #ff007f, #7928ca)";
                     addEmojiBtn.style.display = "none";
+                    nitroProfileSettings.style.display = "none";
+                    noNitroNotice.style.display = "block";
                 }
+                renderUserProfilePreview();
             });
         }
 
@@ -449,6 +626,7 @@
                 document.getElementById('admin-btn').style.display = 'inline-block';
                 document.getElementById('nitro-requests-sec').style.display = 'block';
                 listenForNitroRequests();
+                listenForActiveNitro();
                 return;
             }
 
@@ -486,6 +664,30 @@
             });
         }
 
+        function listenForActiveNitro() {
+            nitroRef.on('value', (snap) => {
+                const list = document.getElementById('active-nitro-list');
+                list.innerHTML = '';
+                if (!snap.exists()) {
+                    list.innerHTML = '<span style="font-size:0.75rem; color:gray;">Нет пользователей с Nitro</span>';
+                    return;
+                }
+
+                snap.forEach((child) => {
+                    if (child.val() === true) {
+                        const nitroUser = child.key;
+                        const div = document.createElement('div');
+                        div.className = 'req-card';
+                        div.innerHTML = `
+                            <span style="font-size:0.8rem; color:#ff007f;">⭐ @${nitroUser}</span>
+                            <button class="btn-small" style="background:#d50000;" onclick="revokeNitro('${nitroUser}')">❌ Забрать Nitro</button>
+                        `;
+                        list.appendChild(div);
+                    }
+                });
+            });
+        }
+
         function approveNitro(user) {
             nitroRef.child(user.toLowerCase()).set(true);
             nitroReqRef.child(user).remove();
@@ -493,6 +695,13 @@
 
         function rejectNitro(user) {
             nitroReqRef.child(user).remove();
+        }
+
+        function revokeNitro(userKey) {
+            if (confirm(`Вы уверены, что хотите забрать Nitro у @${userKey}?`)) {
+                nitroRef.child(userKey.toLowerCase()).remove();
+                alert(`Nitro успешно забран у ${userKey}!`);
+            }
         }
 
         // --- 🎨 NITRO КАСТОМНЫЕ ЭМОДЗИ (ПЕРСОНАЛЬНЫЕ) ---
@@ -506,7 +715,6 @@
 
             const reader = new FileReader();
             reader.onload = function(evt) {
-                // Привязываем владельца (owner) к загружаемому эмодзи
                 customEmojisRef.push({
                     url: evt.target.result,
                     owner: currentUser.toLowerCase()
@@ -522,7 +730,6 @@
                 if (snap.exists()) {
                     snap.forEach(child => {
                         const data = child.val();
-                        // Фильтруем: показываем эмодзи только текущему владельцу
                         if (data.owner && data.owner.toLowerCase() === currentUser.toLowerCase()) {
                             const img = document.createElement('img');
                             img.src = data.url;
@@ -640,8 +847,16 @@
             const div = document.createElement('div');
             div.className = `message ${isMy ? 'my-message' : ''}`;
             
+            const userProf = cachedProfiles[data.user.toLowerCase()] || {};
+            const avatarSrc = userProf.avatar || "https://via.placeholder.com/80";
+
             let nitroBadge = data.isNitro ? `<span class="nitro-badge">NITRO</span>` : '';
-            let html = `<div class="username">${data.user} ${nitroBadge}</div>`;
+            
+            let html = `
+                <img src="${avatarSrc}" class="msg-avatar" onclick="viewUserProfile('${data.user}')">
+                <div class="msg-content">
+                    <div class="username" onclick="viewUserProfile('${data.user}')">${data.user} ${nitroBadge}</div>
+            `;
             
             if (data.text) html += `<div>${data.text}</div>`;
             
@@ -655,6 +870,7 @@
                 }
             }
 
+            html += `</div>`;
             div.innerHTML = html;
             container.appendChild(div);
         }
