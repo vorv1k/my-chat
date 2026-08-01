@@ -29,48 +29,50 @@
             height: 100vh; overflow: hidden;
         }
 
-        /* ✈️ СТИЛИ ДЛЯ ВЫПЛЫВАЮЩЕЙ РЕКЛАМЫ АВИАСЕЙЛС */
+        /* ✈️ АККУРАТНЫЙ БАННЕР РЕКЛАМЫ (НЕ МЕШАЕТ ЧАТУ) */
         .ad-banner-container {
             position: fixed;
-            top: -120px; /* Спрятан за верхним краем экрана */
+            top: -100px; /* Спрятан за верхним краем */
             left: 50%;
             transform: translateX(-50%);
             width: 90%;
-            max-width: 500px;
-            height: 80px;
+            max-width: 400px; /* Компактная ширина */
+            height: 60px;     /* Компактная высота */
             background: #0085fe;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
             z-index: 9999;
             display: flex;
             align-items: center;
+            justify-content: center;
             overflow: hidden;
-            transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: top 0.4s ease-in-out;
             cursor: pointer;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .ad-banner-container.show {
-            top: 15px; /* Выезжает сверху */
+            top: 10px; /* Выезжает в самую верхнюю часть */
         }
 
         .ad-banner-img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; /* Картинка идеально вписывается по размеру */
+            background-color: #0085fe;
         }
 
         .ad-close-btn {
             position: absolute;
-            top: 5px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.5);
+            top: 4px;
+            right: 6px;
+            background: rgba(0, 0, 0, 0.6);
             color: #fff;
             border: none;
             border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 12px;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
             cursor: pointer;
             display: flex;
             justify-content: center;
@@ -112,7 +114,7 @@
             max-height: 90vh; overflow-y: auto;
         }
 
-        .modal input, .modal select {
+        .modal input {
             width: 100%; padding: 10px; margin: 6px 0;
             border-radius: 8px; border: 1px solid var(--border-color);
             background: var(--bg-input); color: #fff; outline: none;
@@ -174,35 +176,19 @@
         .emoji-picker span:hover { transform: scale(1.2); }
 
         .admin-panel { display: flex; flex-direction: column; gap: 10px; text-align: left; }
-
-        #screamer-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #000; z-index: 99999; display: none;
-            justify-content: center; align-items: center;
-        }
-        #screamer-overlay img {
-            width: 100%; height: 100%; object-fit: cover;
-        }
     </style>
 </head>
 <body>
 
-    <!-- ✈️ РЕКЛАМНЫЙ БАННЕР АВИАСЕЙЛС -->
+    <!-- ✈️ РЕКЛАМНЫЙ БАННЕР (Файл из вашего репозитория) -->
     <div class="ad-banner-container" id="aviasales-ad" onclick="openAviasales()">
         <button class="ad-close-btn" onclick="closeAd(event)">✕</button>
-        <!-- Картинка Авиасейлс -->
-        <img class="ad-banner-img" src="https://i.postimg.cc/P5Lp7X3M/aviasales-banner.png" alt="Авиасейлс">
+        <img class="ad-banner-img" src="./aviasales.png" alt="Авиасейлс">
     </div>
 
     <!-- Аудио элементы -->
-    <audio id="abuse-audio" src="music.mp3"></audio>
+    <audio id="abuse-audio" src="music.mp3" loop></audio>
     <audio id="stream-audio" autoplay></audio>
-    <audio id="screamer-audio"></audio>
-
-    <!-- Экран Скримера -->
-    <div id="screamer-overlay">
-        <img id="screamer-img" src="" alt="Screamer">
-    </div>
 
     <!-- Вход / Ввод ника -->
     <div class="modal-overlay" id="nickname-modal" style="display: none;">
@@ -220,8 +206,7 @@
         <div class="modal">
             <h2>👑 Панель Администратора</h2>
             <div class="admin-panel" style="margin-top: 15px;">
-                <button class="btn-small" style="background: linear-gradient(45deg, #ff0055, #ff5000); padding: 10px; font-weight: bold;" onclick="toggleAbuseMusic()">💥 АДМИН АБЬЮЗ (Файл music.mp3)</button>
-                <button class="btn-small" style="background: linear-gradient(45deg, #8e2de2, #4a00e0); padding: 10px; font-weight: bold;" onclick="openScreamerMenu()">😱 ОТПРАВИТЬ СКРИМЕР</button>
+                <button class="btn-small" style="background: linear-gradient(45deg, #ff0055, #ff5000); padding: 10px; font-weight: bold;" onclick="toggleAbuseMusic()">💥 АДМИН АБЬЮЗ (Вкл/Выкл музыку всем)</button>
                 
                 <hr style="border-color: var(--border-color); margin: 5px 0;">
                 
@@ -248,37 +233,6 @@
                 <button class="btn-small" style="background:#e91e63; width:100%;" onclick="clearAllMessages()">🗑️ Очистить весь чат</button>
             </div>
             <button class="btn-small" style="width:100%; margin-top: 15px;" onclick="closeAdmin()">Закрыть</button>
-        </div>
-    </div>
-
-    <!-- 😱 Настройка Скримера -->
-    <div class="modal-overlay" id="screamer-modal" style="display: none; z-index: 1001;">
-        <div class="modal">
-            <h2>😱 Настройка Скримера</h2>
-            <div style="text-align: left; margin-top: 10px; font-size: 0.85rem;">
-                <label style="color: var(--accent-primary); font-weight: bold;">1. Жертва (Никнейм или 'ALL'):</label>
-                <input type="text" id="screamer-target" placeholder="Введите ник или ALL для всех">
-
-                <label style="color: var(--accent-primary); font-weight: bold;">2. Шаблон картинки/гифки:</label>
-                <select id="screamer-preset" onchange="applyScreamerPreset()">
-                    <option value="https://i.postimg.cc/mD8N1Csh/screamer1.gif">👻 Страшное Лицо (Рабочая GIF)</option>
-                    <option value="https://i.postimg.cc/PJ2T210B/screamer2.gif">👺 Монстр (Рабочая GIF)</option>
-                    <option value="https://i.postimg.cc/44C5X658/screamer3.jpg">👹 Крик (Фото)</option>
-                    <option value="custom">-- Ввести свою ссылку --</option>
-                </select>
-
-                <label style="color: var(--accent-primary); font-weight: bold;">Прямая ссылка на GIF/Фото:</label>
-                <input type="text" id="screamer-img-url" value="https://i.postimg.cc/mD8N1Csh/screamer1.gif" placeholder="https://site.com/image.gif">
-
-                <label style="color: var(--accent-primary); font-weight: bold;">Ссылка на Звук (MP3):</label>
-                <input type="text" id="screamer-audio-url" value="https://www.myinstants.com/media/sounds/screamer.mp3" placeholder="Ссылка на mp3 крик">
-
-                <label style="color: var(--accent-primary); font-weight: bold;">Длительность (в секундах):</label>
-                <input type="number" id="screamer-duration" value="3" min="1" max="10">
-
-                <button class="glow-button" style="width:100%; margin-top: 10px; background: linear-gradient(45deg, #ff0055, #ff5000); color:#fff;" onclick="sendScreamer()">💥 ОТПРАВИТЬ СКРИМЕР</button>
-                <button class="btn-small" style="width:100%; margin-top: 8px;" onclick="closeScreamerMenu()">Отмена</button>
-            </div>
         </div>
     </div>
 
@@ -340,7 +294,6 @@
         const musicRef = database.ref('admin_music');
         const adminsRef = database.ref('admins');
         const audioStreamRef = database.ref('admin_audio_stream');
-        const screamerRef = database.ref('screamer_trigger');
 
         const MAIN_ADMIN = "Anton"; 
 
@@ -354,25 +307,25 @@
             } else {
                 initChat();
             }
-            startAdLoop(); // ✈️ Запуск таймера рекламы
+            startAdLoop(); // Запуск бесконечной рекламы
         };
 
-        // --- ✈️ ЛОГИКА ВЫПЛЫВАЮЩЕЙ РЕКЛАМЫ ---
+        // --- ✈️ БЕСКОНЕЧНАЯ И НЕ МЕШАЮЩАЯ РЕКЛАМА ---
         function startAdLoop() {
             setInterval(() => {
                 const ad = document.getElementById('aviasales-ad');
                 ad.classList.add('show');
 
-                // Автоматически убирать баннер через 3 секунды
+                // Повисеть 3 секунды и спрятаться
                 setTimeout(() => {
                     ad.classList.remove('show');
                 }, 3000);
 
-            }, 5000); // Появляется каждые 5 секунд
+            }, 5000); // Каждые 5 секунд
         }
 
         function closeAd(event) {
-            event.stopPropagation(); // Чтобы не переходило по ссылке при клике на крестик
+            event.stopPropagation();
             document.getElementById('aviasales-ad').classList.remove('show');
         }
 
@@ -424,7 +377,7 @@
 
         function promptChangeNick() {
             if (!checkNickLimit()) {
-                alert("❌ Вы использовали все 3 попытки смены ника за день! Попробуйте позже.");
+                alert("❌ Вы использовали все 3 попытки смены ника за день!");
                 return;
             }
             document.getElementById('nickname-input').value = currentUser;
@@ -439,7 +392,6 @@
             listenForAdminResets();
             listenForMusic();
             listenForAudioStream();
-            listenForScreamers();
         }
 
         function checkAdminRights() {
@@ -511,7 +463,7 @@
             if (!file) return;
 
             if (file.size > 3 * 1024 * 1024) {
-                alert("⚠️ Файл слишком большой! Выберите файл размером до 3 МБ.");
+                alert("⚠️ Файл слишком большой! До 3 МБ.");
                 return;
             }
 
@@ -592,10 +544,11 @@
             document.getElementById('admin-modal').style.display = 'none';
         }
 
+        // 🔊 СИНХРОННЫЙ АДМИН АБЬЮЗ (Музыка для всех через Firebase)
         async function toggleAbuseMusic() {
             const snap = await musicRef.once('value');
             const isPlaying = snap.val();
-            musicRef.set(!isPlaying);
+            musicRef.set(!isPlaying); // Переключает статус на сервере
         }
 
         function listenForMusic() {
@@ -603,7 +556,7 @@
             musicRef.on('value', (snapshot) => {
                 const shouldPlay = snapshot.val();
                 if (shouldPlay) {
-                    audio.play().catch(e => console.log("Кликните на страницу"));
+                    audio.play().catch(e => console.log("Нажмите на страницу для воспроизведения звука"));
                 } else {
                     audio.pause();
                     audio.currentTime = 0;
@@ -642,93 +595,11 @@
             });
         }
 
-        // --- 😱 СКРИМЕРЫ ---
-        function openScreamerMenu() {
-            const target = document.getElementById('target-user').value.trim();
-            if (target) {
-                document.getElementById('screamer-target').value = target;
-            }
-            closeAdmin();
-            document.getElementById('screamer-modal').style.display = 'flex';
-        }
-
-        function closeScreamerMenu() {
-            document.getElementById('screamer-modal').style.display = 'none';
-        }
-
-        function applyScreamerPreset() {
-            const select = document.getElementById('screamer-preset');
-            if (select.value !== 'custom') {
-                document.getElementById('screamer-img-url').value = select.value;
-            }
-        }
-
-        function sendScreamer() {
-            const target = document.getElementById('screamer-target').value.trim();
-            const imgUrl = document.getElementById('screamer-img-url').value.trim();
-            const audioUrl = document.getElementById('screamer-audio-url').value.trim();
-            const duration = parseInt(document.getElementById('screamer-duration').value) || 3;
-
-            if (!target) {
-                alert("Укажите ник жертвы или 'ALL'");
-                return;
-            }
-            if (!imgUrl) {
-                alert("Укажите ссылку на картинку или GIF!");
-                return;
-            }
-
-            screamerRef.set({
-                target: target.toLowerCase(),
-                img: imgUrl,
-                audio: audioUrl,
-                duration: duration,
-                id: Date.now()
-            });
-
-            alert(`😱 Скример отправлен пользователю (${target})!`);
-            closeScreamerMenu();
-        }
-
-        function listenForScreamers() {
-            screamerRef.on('value', (snapshot) => {
-                if (!snapshot.exists()) return;
-                const data = snapshot.val();
-
-                if (data.target === 'all' || data.target === currentUser.toLowerCase()) {
-                    triggerScreamerEffect(data.img, data.audio, data.duration);
-                }
-            });
-        }
-
-        function triggerScreamerEffect(imgUrl, audioUrl, duration) {
-            const overlay = document.getElementById('screamer-overlay');
-            const img = document.getElementById('screamer-img');
-            const audio = document.getElementById('screamer-audio');
-
-            const cleanUrl = imgUrl.includes('?') ? imgUrl + '&t=' + Date.now() : imgUrl + '?t=' + Date.now();
-            img.src = cleanUrl;
-            
-            overlay.style.display = 'flex';
-
-            if (audioUrl) {
-                audio.src = audioUrl;
-                audio.play().catch(e => console.log("Автовоспроизведение заблокировано"));
-            }
-
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                img.src = '';
-                audio.pause();
-                audio.currentTime = 0;
-            }, duration * 1000);
-        }
-
         function addAdmin() {
             const user = document.getElementById('target-user').value.trim();
             if (user) {
                 adminsRef.child(user.toLowerCase()).set(true);
-                alert(`⭐ Пользователь ${user} теперь Администратор!`);
+                alert(`⭐ Пользователь ${user} теперь Админ!`);
             }
         }
 
@@ -740,7 +611,7 @@
                     return;
                 }
                 adminsRef.child(user.toLowerCase()).remove();
-                alert(`❌ Пользователь ${user} больше не Администратор.`);
+                alert(`❌ Пользователь ${user} больше не Админ.`);
             }
         }
 
@@ -764,7 +635,7 @@
             const user = document.getElementById('target-user').value.trim();
             if (user) {
                 resetNickRef.child(user).set(Date.now());
-                alert(`Лимит попыток ника для ${user} сброшен!`);
+                alert(`Лимит сброшен для ${user}!`);
             }
         }
 
@@ -779,7 +650,7 @@
                 if (snapshot.exists()) {
                     localStorage.setItem('chat_nick_history', "[]");
                     nickHistory = [];
-                    alert("🎉 Админ сбросил ваш дневной лимит смены ника!");
+                    alert("🎉 Админ сбросил ваш лимит смены ника!");
                     resetNickRef.child(currentUser).remove();
                 }
             });
