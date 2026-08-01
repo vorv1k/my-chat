@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат</title>
+    <title>Чат с Nitro & Модерацией</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -16,6 +16,7 @@
             --text-muted: #aaaaaa;
             --accent-primary: #00f2fe;
             --accent-secondary: #4facfe;
+            --nitro-color: #ff007f;
             --btn-glow: 0 0 15px rgba(0, 242, 254, 0.6);
             --border-color: rgba(255, 255, 255, 0.12);
         }
@@ -29,127 +30,75 @@
             height: 100vh; overflow: hidden;
         }
 
-        /* 🚀 БАННЕР 1: DISCORD NITRO (СВЕРХУ) */
+        /* 🚀 БАННЕР 1: DISCORD NITRO */
         .ad-banner-container.discord {
-            position: fixed;
-            top: 20px;
-            left: -350px;
-            width: 260px;  
-            aspect-ratio: 1.5 / 1;
-            border-radius: 14px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: transparent;
+            position: fixed; top: 20px; left: -350px; width: 260px; aspect-ratio: 1.5 / 1;
+            border-radius: 14px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7); z-index: 9999;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2); background: transparent;
         }
 
-        /* ✈️ БАННЕР 2: AVIASALES (СНИЗУ ПОД DISCORD) */
+        /* ✈️ БАННЕР 2: AVIASALES */
         .ad-banner-container.aviasales {
-            position: fixed;
-            top: 210px; /* Позиционирован ниже первого баннера */
-            left: -350px;
-            width: 260px;  
-            aspect-ratio: 2 / 1;
-            border-radius: 14px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
-            z-index: 9998;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: transparent;
+            position: fixed; top: 210px; left: -350px; width: 260px; aspect-ratio: 2 / 1;
+            border-radius: 14px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7); z-index: 9998;
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2); background: transparent;
         }
 
-        /* Анимация выезда слева */
-        .ad-banner-container.show {
-            left: 20px; 
-        }
-
-        .ad-banner-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
+        .ad-banner-container.show { left: 20px; }
+        .ad-banner-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
         .ad-close-btn {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            background: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 11px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            transition: background 0.2s;
+            position: absolute; top: 6px; right: 6px; background: rgba(0, 0, 0, 0.6);
+            color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px;
+            font-size: 11px; cursor: pointer; display: flex; justify-content: center;
+            align-items: center; z-index: 10000; transition: background 0.2s;
         }
-
-        .ad-close-btn:hover {
-            background: rgba(0, 0, 0, 0.9);
-        }
+        .ad-close-btn:hover { background: rgba(0, 0, 0, 0.9); }
 
         .glow-button {
             background: linear-gradient(45deg, var(--accent-secondary), var(--accent-primary));
-            color: #000; border: none; border-radius: 20px;
-            cursor: pointer; font-weight: bold; padding: 10px 20px;
-            transition: all 0.3s ease; box-shadow: var(--btn-glow);
+            color: #000; border: none; border-radius: 20px; cursor: pointer;
+            font-weight: bold; padding: 10px 20px; transition: all 0.3s ease; box-shadow: var(--btn-glow);
         }
 
-        .glow-button:disabled {
-            background: rgba(255, 255, 255, 0.15);
-            color: var(--text-muted);
-            box-shadow: none;
-            cursor: not-allowed;
-            transform: none !important;
+        .btn-nitro {
+            background: linear-gradient(45deg, #ff007f, #7928ca);
+            color: #fff; border: none; border-radius: 12px; cursor: pointer;
+            font-weight: bold; padding: 5px 12px; font-size: 0.8rem;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.5); transition: transform 0.2s;
         }
+        .btn-nitro:hover { transform: scale(1.05); }
 
         .btn-small {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--border-color); color: var(--text-main);
-            padding: 5px 10px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border-color);
+            color: var(--text-main); padding: 5px 10px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;
         }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); display: flex;
-            justify-content: center; align-items: center; z-index: 1000;
-            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center;
+            align-items: center; z-index: 1000; backdrop-filter: blur(8px);
         }
 
         .modal {
             background: var(--bg-chat); padding: 25px; border-radius: 16px;
-            width: 380px; border: 1px solid var(--border-color); text-align: center;
+            width: 420px; border: 1px solid var(--border-color); text-align: center;
             max-height: 90vh; overflow-y: auto;
         }
 
-        .modal input {
-            width: 100%; padding: 10px; margin: 6px 0;
-            border-radius: 8px; border: 1px solid var(--border-color);
-            background: var(--bg-input); color: #fff; outline: none;
+        .modal input, .modal select {
+            width: 100%; padding: 8px 12px; margin: 4px 0 10px 0; border-radius: 8px;
+            border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; outline: none;
         }
 
         .chat-container {
-            width: 100%; max-width: 750px; height: 90vh;
-            background: var(--bg-chat); backdrop-filter: blur(12px);
-            border-radius: 20px; display: flex; flex-direction: column;
-            border: 1px solid var(--border-color);
-            position: relative;
+            width: 100%; max-width: 750px; height: 90vh; background: var(--bg-chat);
+            backdrop-filter: blur(12px); border-radius: 20px; display: flex;
+            flex-direction: column; border: 1px solid var(--border-color); position: relative;
         }
 
         .chat-header {
@@ -159,14 +108,13 @@
         }
 
         .chat-messages {
-            flex: 1; padding: 20px; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 12px;
+            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
         }
 
         .message {
             max-width: 75%; padding: 10px 14px; border-radius: 14px;
-            background: var(--bg-input); align-self: flex-start;
-            word-wrap: break-word; border: 1px solid rgba(255, 255, 255, 0.08);
+            background: var(--bg-input); align-self: flex-start; word-wrap: break-word;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .message.my-message {
@@ -174,14 +122,15 @@
             align-self: flex-end; border: 1px solid rgba(0, 242, 254, 0.4);
         }
 
-        .message .username { font-size: 0.75rem; font-weight: bold; color: var(--accent-primary); margin-bottom: 4px; }
+        .message .username { font-size: 0.75rem; font-weight: bold; color: var(--accent-primary); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;}
+        .nitro-badge { background: linear-gradient(45deg, #ff007f, #7928ca); color: #fff; font-size: 0.65rem; padding: 1px 5px; border-radius: 6px; }
+
         .message-img { max-width: 100%; max-height: 250px; border-radius: 8px; margin-top: 5px; cursor: pointer; }
-        .message-file { display: inline-block; padding: 6px 10px; background: rgba(255,255,255,0.1); border-radius: 6px; color: var(--accent-primary); text-decoration: none; font-size: 0.85rem; margin-top: 5px; }
+        .custom-emoji { width: 32px; height: 32px; vertical-align: middle; }
 
         .chat-input-area {
             padding: 15px; background: rgba(15, 15, 20, 0.8);
-            border-top: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center;
-            position: relative;
+            border-top: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center; position: relative;
         }
 
         .chat-input-area input[type="text"] {
@@ -191,82 +140,103 @@
 
         .emoji-picker {
             position: absolute; bottom: 65px; left: 15px; background: #1a1a20;
-            border: 1px solid var(--border-color); border-radius: 12px;
-            padding: 10px; display: none; grid-template-columns: repeat(6, 1fr); gap: 8px;
-            z-index: 100; max-height: 180px; overflow-y: auto;
+            border: 1px solid var(--border-color); border-radius: 12px; padding: 10px;
+            display: none; grid-template-columns: repeat(6, 1fr); gap: 8px; z-index: 100; max-height: 200px; overflow-y: auto;
         }
 
-        .emoji-picker span { cursor: pointer; font-size: 1.3rem; text-align: center; transition: transform 0.1s; }
-        .emoji-picker span:hover { transform: scale(1.2); }
+        .emoji-picker span, .emoji-picker img { cursor: pointer; font-size: 1.3rem; text-align: center; transition: transform 0.1s; }
+        .emoji-picker span:hover, .emoji-picker img:hover { transform: scale(1.2); }
 
-        .admin-panel { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+        .admin-panel { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+        .req-card { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
-    <!-- 🚀 ВЕРХНИЙ БАННЕР DISCORD NITRO -->
+    <!-- 🚀 БАННЕРЫ -->
     <div class="ad-banner-container discord" id="discord-ad" onclick="openDiscordAd()">
         <button class="ad-close-btn" onclick="closeAd(event, 'discord-ad')">✕</button>
         <img class="ad-banner-img" src="./discord.png" alt="Discord Nitro">
     </div>
 
-    <!-- ✈️ НИЖНИЙ БАННЕР AVIASALES -->
     <div class="ad-banner-container aviasales" id="aviasales-ad" onclick="openAviasalesAd()">
         <button class="ad-close-btn" onclick="closeAd(event, 'aviasales-ad')">✕</button>
         <img class="ad-banner-img" src="./aviasales.png" alt="Aviasales">
     </div>
 
-    <!-- Аудио элементы -->
     <audio id="abuse-audio" src="music.mp3" loop></audio>
     <audio id="stream-audio" autoplay></audio>
 
-    <!-- Вход / Ввод ника -->
+    <!-- Вход / Ник -->
     <div class="modal-overlay" id="nickname-modal" style="display: none;">
         <div class="modal">
             <h2>Введите ник</h2>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Лимит смены ника: 3 раза в день</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Лимит смены ника: 3 раза в день (Безлимитно для NITRO)</p>
             <input type="text" id="nickname-input" placeholder="Никнейм..." maxlength="15">
             <div id="modal-error" style="color: #ff4d4d; font-size: 0.8rem; display:none; margin-bottom: 5px;"></div>
             <button class="glow-button" style="width:100%; margin-top: 10px;" onclick="saveUsername()">Войти</button>
         </div>
     </div>
 
-    <!-- 👑 Главная Админ Панель -->
+    <!-- 👑 АДМИН ПАНЕЛЬ -->
     <div class="modal-overlay" id="admin-modal" style="display: none;">
         <div class="modal">
             <h2>👑 Панель Администратора</h2>
             <div class="admin-panel" style="margin-top: 15px;">
-                <button class="btn-small" style="background: linear-gradient(45deg, #ff0055, #ff5000); padding: 10px; font-weight: bold;" onclick="toggleAbuseMusic()">💥 АДМИН АБЬЮЗ (Вкл/Выкл музыку всем)</button>
                 
-                <hr style="border-color: var(--border-color); margin: 5px 0;">
-                
-                <span style="font-size: 0.85rem; color: var(--accent-primary); font-weight: bold;">🎵 Звук / Музыка по ссылке (всем):</span>
-                <input type="text" id="audio-link-input" placeholder="Ссылка на MP3 или аудиопоток...">
-                <div style="display: flex; gap: 5px;">
-                    <button class="btn-small" style="background:#00c853; flex:1;" onclick="playAudioUrl()">🔊 Включить всем</button>
-                    <button class="btn-small" style="background:#d50000; flex:1;" onclick="stopAudioUrl()">🔇 Выключить</button>
+                <!-- Запросы Nitro (Главный Админ) -->
+                <div id="nitro-requests-sec" style="display:none; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                    <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold;">⭐ Запросы на NITRO:</span>
+                    <div id="nitro-requests-list" style="margin-top: 5px;"></div>
                 </div>
 
-                <hr style="border-color: var(--border-color); margin: 5px 0;">
+                <button class="btn-small" style="background: linear-gradient(45deg, #ff0055, #ff5000); padding: 8px; font-weight: bold;" onclick="toggleAbuseMusic()">💥 АДМИН АБЬЮЗ (Музыка всем)</button>
+                
+                <span style="font-size: 0.85rem; color: var(--accent-primary); font-weight: bold; margin-top:5px;">🎵 Музыка по ссылке (всем):</span>
+                <input type="text" id="audio-link-input" placeholder="Ссылка на MP3/поток...">
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn-small" style="background:#00c853; flex:1;" onclick="playAudioUrl()">🔊 Вкл</button>
+                    <button class="btn-small" style="background:#d50000; flex:1;" onclick="stopAudioUrl()">🔇 Выкл</button>
+                </div>
+
+                <hr style="border-color: var(--border-color); margin: 3px 0;">
                 
                 <input type="text" id="target-user" placeholder="Ник пользователя...">
                 
+                <!-- Наказания -->
+                <label style="font-size: 0.75rem; color: var(--text-muted);">Причина наказания:</label>
+                <input type="text" id="punish-reason" placeholder="Например: Спам / Неадекват">
+
+                <div style="display: flex; gap: 5px; align-items: center;">
+                    <select id="ban-time" style="flex:1;">
+                        <option value="300">5 минут</option>
+                        <option value="3600">1 час</option>
+                        <option value="86400">24 часа</option>
+                        <option value="-1">Навсегда</option>
+                    </select>
+                    <button class="btn-small" style="background:#ff4d4d; flex:1;" onclick="banUser()">🚫 Забанить</button>
+                    <button class="btn-small" style="background:#ff9800; flex:1;" onclick="muteUser()">🔇 Замутить</button>
+                </div>
+
+                <div style="display: flex; gap: 5px; margin-top: 3px;">
+                    <button class="btn-small" style="background:#4caf50; flex:1;" onclick="unbanUser()">🔓 Разбанить</button>
+                    <button class="btn-small" style="background:#00bcd4; flex:1;" onclick="unmuteUser()">🔊 Размутить</button>
+                </div>
+
+                <hr style="border-color: var(--border-color); margin: 3px 0;">
+
                 <div style="display: flex; gap: 5px;">
                     <button class="btn-small" style="background:#9c27b0; flex:1;" onclick="addAdmin()">⭐ Выдать Админку</button>
                     <button class="btn-small" style="background:#607d8b; flex:1;" onclick="removeAdmin()">❌ Снять Админку</button>
                 </div>
 
-                <button class="btn-small" style="background:#ff4d4d;" onclick="banUser()">🚫 Забанить</button>
-                <button class="btn-small" style="background:#4caf50;" onclick="unbanUser()">🔓 Разбанить</button>
-                <button class="btn-small" style="background:#2196f3;" onclick="allowNickChange()">🔄 Сбросить лимит ников человеку</button>
-                <hr style="border-color: var(--border-color); margin: 5px 0;">
-                <button class="btn-small" style="background:#e91e63; width:100%;" onclick="clearAllMessages()">🗑️ Очистить весь чат</button>
+                <button class="btn-small" style="background:#e91e63; width:100%; margin-top:5px;" onclick="clearAllMessages()">🗑️ Очистить весь чат</button>
             </div>
             <button class="btn-small" style="width:100%; margin-top: 15px;" onclick="closeAdmin()">Закрыть</button>
         </div>
     </div>
 
-    <!-- Главный Чат -->
+    <!-- ЧАТ -->
     <div class="chat-container">
         <div class="chat-header">
             <div>
@@ -274,7 +244,8 @@
                 <span id="user-display" style="font-size: 0.85rem; color: var(--accent-primary); margin-left: 10px;"></span>
                 <button class="btn-small" onclick="promptChangeNick()" style="margin-left: 5px;">✏️</button>
             </div>
-            <div>
+            <div style="display: flex; gap: 5px;">
+                <button class="btn-nitro" id="buy-nitro-btn" onclick="requestNitro()">⭐ Купить Nitro</button>
                 <button class="btn-small" id="admin-btn" style="display: none; background: linear-gradient(45deg, #ff007f, #7928ca);" onclick="openAdmin()">👑 Админка</button>
             </div>
         </div>
@@ -283,15 +254,22 @@
 
         <!-- Панель Эмодзи -->
         <div class="emoji-picker" id="emoji-picker">
-            <span onclick="addEmoji('😀')">😀</span><span onclick="addEmoji('😂')">😂</span><span onclick="addEmoji('😍')">😍</span>
-            <span onclick="addEmoji('😎')">😎</span><span onclick="addEmoji('😭')">😭</span><span onclick="addEmoji('🔥')">🔥</span>
-            <span onclick="addEmoji('👍')">👍</span><span onclick="addEmoji('❤️')">❤️</span><span onclick="addEmoji('🎉')">🎉</span>
-            <span onclick="addEmoji('💩')">💩</span><span onclick="addEmoji('💀')">💀</span><span onclick="addEmoji('🤡')">🤡</span>
-            <span onclick="addEmoji('🤔')">🤔</span><span onclick="addEmoji('😡')">😡</span><span onclick="addEmoji('👀')">👀</span>
-            <span onclick="addEmoji('🚀')">🚀</span><span onclick="addEmoji('✨')">✨</span><span onclick="addEmoji('💯')">💯</span>
+            <div id="standard-emojis" style="display: contents;">
+                <span onclick="addEmoji('😀')">😀</span><span onclick="addEmoji('😂')">😂</span><span onclick="addEmoji('😍')">😍</span>
+                <span onclick="addEmoji('😎')">😎</span><span onclick="addEmoji('😭')">😭</span><span onclick="addEmoji('🔥')">🔥</span>
+                <span onclick="addEmoji('👍')">👍</span><span onclick="addEmoji('❤️')">❤️</span><span onclick="addEmoji('🎉')">🎉</span>
+                <span onclick="addEmoji('💀')">💀</span><span onclick="addEmoji('🤡')">🤡</span><span onclick="addEmoji('🚀')">🚀</span>
+            </div>
+            <div id="custom-emojis-container" style="display: contents;"></div>
+            
+            <!-- Загрузка личного эмодзи (Только Nitro) -->
+            <label id="add-custom-emoji-btn" style="display:none; grid-column: span 6; background: rgba(255,0,127,0.2); border: 1px dashed #ff007f; border-radius: 8px; padding: 5px; cursor: pointer; text-align: center; font-size: 0.75rem; margin-top: 5px;">
+                ➕ Добавить свой Nitro-эмодзи
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadCustomEmoji(event)">
+            </label>
         </div>
 
-        <div class="chat-input-area">
+        <div class="chat-input-area" id="input-area">
             <button class="btn-small" onclick="toggleEmojiPicker()" style="font-size: 1.1rem; padding: 6px 10px;">😀</button>
             
             <label class="btn-small" style="font-size: 1.1rem; padding: 6px 10px; cursor: pointer;" title="Отправить картинку или файл">
@@ -301,6 +279,9 @@
 
             <input type="text" id="message-input" placeholder="Напишите сообщение..." onkeypress="if(event.key==='Enter') sendMessage()">
             <button class="glow-button" id="send-btn" onclick="sendMessage()">Отправить</button>
+        </div>
+        <div id="mute-notice" style="display:none; padding:15px; text-align:center; color:#ff4d4d; background: rgba(0,0,0,0.5);">
+            🔇 Вы замучены!
         </div>
     </div>
 
@@ -319,6 +300,10 @@
         const database = firebase.database();
         const messagesRef = database.ref('messages');
         const bansRef = database.ref('bans');
+        const mutesRef = database.ref('mutes');
+        const nitroRef = database.ref('nitro_users');
+        const nitroReqRef = database.ref('nitro_requests');
+        const customEmojisRef = database.ref('custom_emojis');
         const resetNickRef = database.ref('resetNickRequests');
         const usersRef = database.ref('users');
         const musicRef = database.ref('admin_music');
@@ -329,6 +314,7 @@
 
         let currentUser = localStorage.getItem('chat_username') || "";
         let isCooldown = false;
+        let isNitroUser = false;
         let nickHistory = JSON.parse(localStorage.getItem('chat_nick_history') || "[]");
 
         window.onload = function() {
@@ -340,7 +326,6 @@
             showAdOnce();
         };
 
-        // --- 📢 УПРАВЛЕНИЕ РЕКЛАМОЙ (DISCORD И AVIASALES) ---
         function showAdOnce() {
             setTimeout(() => {
                 document.getElementById('discord-ad').classList.add('show');
@@ -352,11 +337,7 @@
             event.stopPropagation();
             const ad = document.getElementById(adId);
             ad.classList.remove('show');
-
-            // Повторный выезд конкретного баннера через 5 секунд
-            setTimeout(() => {
-                ad.classList.add('show');
-            }, 5000);
+            setTimeout(() => { ad.classList.add('show'); }, 5000);
         }
 
         function openDiscordAd() {
@@ -368,6 +349,7 @@
         }
 
         function checkNickLimit() {
+            if (isNitroUser) return true; // Nitro = БЕЗЛИМИТ
             const now = Date.now();
             const ONE_DAY = 24 * 60 * 60 * 1000;
             nickHistory = nickHistory.filter(time => now - time < ONE_DAY);
@@ -385,7 +367,7 @@
             }
 
             if (currentUser && currentUser !== name && !checkNickLimit()) {
-                showError("⚠️ Достигнут лимит: сменить ник можно только 3 раза в день!");
+                showError("⚠️ Лимит: сменить ник можно только 3 раза в день! (Нужен Nitro)");
                 return;
             }
 
@@ -397,8 +379,10 @@
 
             if (currentUser && currentUser !== name) {
                 usersRef.child(currentUser.toLowerCase()).remove();
-                nickHistory.push(Date.now());
-                localStorage.setItem('chat_nick_history', JSON.stringify(nickHistory));
+                if (!isNitroUser) {
+                    nickHistory.push(Date.now());
+                    localStorage.setItem('chat_nick_history', JSON.stringify(nickHistory));
+                }
             }
 
             currentUser = name;
@@ -411,7 +395,7 @@
 
         function promptChangeNick() {
             if (!checkNickLimit()) {
-                alert("❌ Вы использовали все 3 попытки смены ника за день!");
+                alert("❌ Лимит 3 смены в день исчерпан! Купите Nitro для безлимита.");
                 return;
             }
             document.getElementById('nickname-input').value = currentUser;
@@ -421,16 +405,50 @@
         function initChat() {
             document.getElementById('user-display').innerText = `@${currentUser}`;
             checkAdminRights();
+            checkNitroStatus();
 
             listenForMessages();
             listenForAdminResets();
             listenForMusic();
             listenForAudioStream();
+            listenForMuteAndBan();
+            loadCustomEmojis();
+        }
+
+        // --- ⭐ NITRO ЛОГИКА ---
+        function checkNitroStatus() {
+            nitroRef.child(currentUser.toLowerCase()).on('value', (snap) => {
+                isNitroUser = snap.exists() && snap.val() === true;
+                const buyBtn = document.getElementById('buy-nitro-btn');
+                const addEmojiBtn = document.getElementById('add-custom-emoji-btn');
+                
+                if (isNitroUser) {
+                    buyBtn.innerText = "⭐ NITRO АКТИВЕН";
+                    buyBtn.style.background = "#00c853";
+                    addEmojiBtn.style.display = "block";
+                } else {
+                    buyBtn.innerText = "⭐ Купить Nitro";
+                    buyBtn.style.background = "linear-gradient(45deg, #ff007f, #7928ca)";
+                    addEmojiBtn.style.display = "none";
+                }
+            });
+        }
+
+        function requestNitro() {
+            if (isNitroUser) {
+                alert("У вас уже активирован Nitro!");
+                return;
+            }
+            nitroReqRef.child(currentUser).set(Date.now());
+            alert("🚀 Запрос на Nitro отправлен Главном Администратору (Anton) на подтверждение!");
         }
 
         function checkAdminRights() {
-            if (currentUser.toLowerCase() === MAIN_ADMIN.toLowerCase()) {
+            const isMain = currentUser.toLowerCase() === MAIN_ADMIN.toLowerCase();
+            if (isMain) {
                 document.getElementById('admin-btn').style.display = 'inline-block';
+                document.getElementById('nitro-requests-sec').style.display = 'block';
+                listenForNitroRequests();
                 return;
             }
 
@@ -441,6 +459,81 @@
                     document.getElementById('admin-btn').style.display = 'none';
                 }
             });
+        }
+
+        function listenForNitroRequests() {
+            nitroReqRef.on('value', (snap) => {
+                const list = document.getElementById('nitro-requests-list');
+                list.innerHTML = '';
+                if (!snap.exists()) {
+                    list.innerHTML = '<span style="font-size:0.75rem; color:gray;">Нет запросов</span>';
+                    return;
+                }
+
+                snap.forEach((child) => {
+                    const reqUser = child.key;
+                    const div = document.createElement('div');
+                    div.className = 'req-card';
+                    div.innerHTML = `
+                        <span style="font-size:0.8rem;">@${reqUser}</span>
+                        <div>
+                            <button class="btn-small" style="background:#00c853;" onclick="approveNitro('${reqUser}')">Да</button>
+                            <button class="btn-small" style="background:#d50000;" onclick="rejectNitro('${reqUser}')">Нет</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            });
+        }
+
+        function approveNitro(user) {
+            nitroRef.child(user.toLowerCase()).set(true);
+            nitroReqRef.child(user).remove();
+        }
+
+        function rejectNitro(user) {
+            nitroReqRef.child(user).remove();
+        }
+
+        // --- 🎨 NITRO КАСТОМНЫЕ ЭМОДЗИ ---
+        function uploadCustomEmoji(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.size > 1 * 1024 * 1024) {
+                alert("Эмодзи слишком большой! До 1 МБ.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                customEmojisRef.push({
+                    url: evt.target.result,
+                    owner: currentUser
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadCustomEmojis() {
+            customEmojisRef.on('value', (snap) => {
+                const container = document.getElementById('custom-emojis-container');
+                container.innerHTML = '';
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        const data = child.val();
+                        const img = document.createElement('img');
+                        img.src = data.url;
+                        img.className = 'custom-emoji';
+                        img.onclick = () => addCustomEmoji(data.url);
+                        container.appendChild(img);
+                    });
+                }
+            });
+        }
+
+        function addCustomEmoji(url) {
+            sendMessage({ url: url, type: 'custom_emoji' });
+            toggleEmojiPicker();
         }
 
         function showError(msg) {
@@ -468,22 +561,17 @@
             const text = input.value.trim();
             if (!text && !fileData) return;
 
-            const banSnapshot = await bansRef.child(currentUser).once('value');
-            if (banSnapshot.exists() && banSnapshot.val() === true) {
-                alert("❌ Вы забанены администратором!");
-                return;
-            }
-
             const msgObj = {
                 user: currentUser,
                 text: text,
+                isNitro: isNitroUser,
                 timestamp: Date.now()
             };
 
             if (fileData) {
                 msgObj.file = fileData.url;
                 msgObj.fileType = fileData.type;
-                msgObj.fileName = fileData.name;
+                msgObj.fileName = fileData.name || '';
             }
 
             messagesRef.push(msgObj);
@@ -504,11 +592,7 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const fileType = file.type.startsWith('image/') ? 'image' : 'file';
-                sendMessage({
-                    url: e.target.result,
-                    type: fileType,
-                    name: file.name
-                });
+                sendMessage({ url: e.target.result, type: fileType, name: file.name });
             };
             reader.readAsDataURL(file);
             event.target.value = '';
@@ -518,7 +602,6 @@
             isCooldown = true;
             const btn = document.getElementById('send-btn');
             btn.disabled = true;
-
             let timeLeft = seconds;
             btn.innerText = `${timeLeft}s`;
 
@@ -553,13 +636,16 @@
             const div = document.createElement('div');
             div.className = `message ${isMy ? 'my-message' : ''}`;
             
-            let html = `<div class="username">${data.user}</div>`;
-            if (data.text) {
-                html += `<div>${data.text}</div>`;
-            }
+            let nitroBadge = data.isNitro ? `<span class="nitro-badge">NITRO</span>` : '';
+            let html = `<div class="username">${data.user} ${nitroBadge}</div>`;
+            
+            if (data.text) html += `<div>${data.text}</div>`;
+            
             if (data.file) {
                 if (data.fileType === 'image') {
                     html += `<img src="${data.file}" class="message-img" onclick="window.open('${data.file}')">`;
+                } else if (data.fileType === 'custom_emoji') {
+                    html += `<img src="${data.file}" class="custom-emoji">`;
                 } else {
                     html += `<a href="${data.file}" download="${data.fileName}" class="message-file">📄 ${data.fileName}</a>`;
                 }
@@ -569,113 +655,141 @@
             container.appendChild(div);
         }
 
-        // --- 👑 АДМИН ПАНЕЛЬ ---
-        function openAdmin() {
-            document.getElementById('admin-modal').style.display = 'flex';
+        // --- 🔒 БАНЫ И МУТЫ ---
+        function listenForMuteAndBan() {
+            // ПРОВЕРКА БАНА
+            bansRef.child(currentUser.toLowerCase()).on('value', (snap) => {
+                if (snap.exists()) {
+                    const banData = snap.val();
+                    const now = Date.now();
+                    if (banData.until === -1 || banData.until > now) {
+                        const dateStr = banData.until === -1 ? "Навсегда" : new Date(banData.until).toLocaleString();
+                        alert(`🚫 ВЫ ЗАБАНЕНЫ!\nПричина: ${banData.reason}\nСрок: ${dateStr}`);
+                        document.body.innerHTML = `<h1 style="color:white; text-align:center; margin-top:20%;">🚫 ВЫ ЗАБАНЕНЫ<br><br><span style="font-size:18px;">Причина: ${banData.reason}<br>Истекает: ${dateStr}</span></h1>`;
+                    }
+                }
+            });
+
+            // ПРОВЕРКА МУТА
+            mutesRef.child(currentUser.toLowerCase()).on('value', (snap) => {
+                const inputArea = document.getElementById('input-area');
+                const muteNotice = document.getElementById('mute-notice');
+
+                if (snap.exists()) {
+                    const muteData = snap.val();
+                    const now = Date.now();
+                    if (muteData.until === -1 || muteData.until > now) {
+                        const dateStr = muteData.until === -1 ? "Навсегда" : new Date(muteData.until).toLocaleTimeString();
+                        inputArea.style.display = 'none';
+                        muteNotice.style.display = 'block';
+                        muteNotice.innerText = `🔇 Вы замучены за "${muteData.reason}" до ${dateStr}`;
+                        return;
+                    }
+                }
+                inputArea.style.display = 'flex';
+                muteNotice.style.display = 'none';
+            });
         }
 
-        function closeAdmin() {
-            document.getElementById('admin-modal').style.display = 'none';
+        // --- 👑 АДМИН ПАНЕЛЬ ---
+        function openAdmin() { document.getElementById('admin-modal').style.display = 'flex'; }
+        function closeAdmin() { document.getElementById('admin-modal').style.display = 'none'; }
+
+        function checkProtection(target) {
+            if (target.toLowerCase() === MAIN_ADMIN.toLowerCase()) {
+                alert("❌ ЗАЩИТА: Нельзя забанить/замутить или ограничить Главного Админа (Anton)!");
+                return false;
+            }
+            return true;
+        }
+
+        function banUser() {
+            const user = document.getElementById('target-user').value.trim();
+            const reason = document.getElementById('punish-reason').value.trim() || "Нарушение правил";
+            const seconds = parseInt(document.getElementById('ban-time').value);
+
+            if (!user || !checkProtection(user)) return;
+
+            const until = seconds === -1 ? -1 : Date.now() + (seconds * 1000);
+            bansRef.child(user.toLowerCase()).set({ reason: reason, until: until });
+            alert(`Пользователь ${user} забанен!`);
+        }
+
+        function muteUser() {
+            const user = document.getElementById('target-user').value.trim();
+            const reason = document.getElementById('punish-reason').value.trim() || "Нарушение правил";
+            const seconds = parseInt(document.getElementById('ban-time').value);
+
+            if (!user || !checkProtection(user)) return;
+
+            const until = seconds === -1 ? -1 : Date.now() + (seconds * 1000);
+            mutesRef.child(user.toLowerCase()).set({ reason: reason, until: until });
+            alert(`Пользователь ${user} замучен!`);
+        }
+
+        function unbanUser() {
+            const user = document.getElementById('target-user').value.trim();
+            if (user) {
+                bansRef.child(user.toLowerCase()).remove();
+                alert(`Пользователь ${user} разбанен!`);
+            }
+        }
+
+        function unmuteUser() {
+            const user = document.getElementById('target-user').value.trim();
+            if (user) {
+                mutesRef.child(user.toLowerCase()).remove();
+                alert(`Мут снят с ${user}!`);
+            }
         }
 
         async function toggleAbuseMusic() {
             const snap = await musicRef.once('value');
-            const isPlaying = snap.val();
-            musicRef.set(!isPlaying);
+            musicRef.set(!snap.val());
         }
 
         function listenForMusic() {
             const audio = document.getElementById('abuse-audio');
             musicRef.on('value', (snapshot) => {
-                const shouldPlay = snapshot.val();
-                if (shouldPlay) {
-                    audio.play().catch(e => console.log("Нажмите на страницу для звука"));
-                } else {
-                    audio.pause();
-                    audio.currentTime = 0;
-                }
+                if (snapshot.val()) audio.play().catch(e => console.log("Кликните по экрану"));
+                else { audio.pause(); audio.currentTime = 0; }
             });
         }
 
         function playAudioUrl() {
             const url = document.getElementById('audio-link-input').value.trim();
-            if (!url) {
-                alert("Вставьте ссылку!");
-                return;
-            }
-            audioStreamRef.set({ url: url, timestamp: Date.now() });
-            closeAdmin();
+            if (url) { audioStreamRef.set({ url: url, timestamp: Date.now() }); closeAdmin(); }
         }
 
-        function stopAudioUrl() {
-            audioStreamRef.remove();
-            alert("Аудио выключено!");
-        }
+        function stopAudioUrl() { audioStreamRef.remove(); alert("Выключено!"); }
 
         function listenForAudioStream() {
             const streamAudio = document.getElementById('stream-audio');
             audioStreamRef.on('value', (snapshot) => {
-                if (!snapshot.exists()) {
-                    streamAudio.pause();
-                    streamAudio.src = "";
-                    return;
-                }
+                if (!snapshot.exists()) { streamAudio.pause(); streamAudio.src = ""; return; }
                 const data = snapshot.val();
                 if (streamAudio.src !== data.url) {
                     streamAudio.src = data.url;
-                    streamAudio.play().catch(e => console.log("Кликните по экрану для звука"));
+                    streamAudio.play().catch(e => console.log("Кликните для звука"));
                 }
             });
         }
 
         function addAdmin() {
             const user = document.getElementById('target-user').value.trim();
-            if (user) {
-                adminsRef.child(user.toLowerCase()).set(true);
-                alert(`⭐ Пользователь ${user} теперь Админ!`);
-            }
+            if (user) { adminsRef.child(user.toLowerCase()).set(true); alert(`⭐ ${user} теперь Админ!`); }
         }
 
         function removeAdmin() {
             const user = document.getElementById('target-user').value.trim();
-            if (user) {
-                if (user.toLowerCase() === MAIN_ADMIN.toLowerCase()) {
-                    alert("❌ Нельзя снять права у Главного Администратора!");
-                    return;
-                }
+            if (user && checkProtection(user)) {
                 adminsRef.child(user.toLowerCase()).remove();
-                alert(`❌ Пользователь ${user} больше не Админ.`);
-            }
-        }
-
-        function banUser() {
-            const user = document.getElementById('target-user').value.trim();
-            if (user) {
-                bansRef.child(user).set(true);
-                alert(`Пользователь ${user} забанен!`);
-            }
-        }
-
-        function unbanUser() {
-            const user = document.getElementById('target-user').value.trim();
-            if (user) {
-                bansRef.child(user).remove();
-                alert(`Пользователь ${user} разбанен!`);
-            }
-        }
-
-        function allowNickChange() {
-            const user = document.getElementById('target-user').value.trim();
-            if (user) {
-                resetNickRef.child(user).set(Date.now());
-                alert(`Лимит сброшен для ${user}!`);
+                alert(`❌ ${user} больше не Админ.`);
             }
         }
 
         function clearAllMessages() {
-            if (confirm("Удалить ВСЕ сообщения в чате?")) {
-                messagesRef.remove();
-            }
+            if (confirm("Удалить ВСЕ сообщения?")) messagesRef.remove();
         }
 
         function listenForAdminResets() {
@@ -683,7 +797,7 @@
                 if (snapshot.exists()) {
                     localStorage.setItem('chat_nick_history', "[]");
                     nickHistory = [];
-                    alert("🎉 Админ сбросил ваш лимит смены ника!");
+                    alert("🎉 Лимит смены ника сброшен!");
                     resetNickRef.child(currentUser).remove();
                 }
             });
