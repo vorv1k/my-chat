@@ -29,14 +29,14 @@
             height: 100vh; overflow: hidden;
         }
 
-        /* ✈️ БАННЕР: ПО РАЗМЕРУ КАРТИНКИ, ВЫЕЗЖАЕТ СЛЕВА */
+        /* 🚀 БАННЕР DISCORD NITRO (ПО РАЗМЕРУ КАРТИНКИ) */
         .ad-banner-container {
             position: fixed;
             top: 20px;
-            left: -350px; /* Спрятан слева за экраном */
-            width: 280px;  
-            aspect-ratio: 2 / 1; /* Пропорция картинки */
-            border-radius: 12px;
+            left: -350px; /* Спрятан за левым краем */
+            width: 260px;  /* Аккуратный компактный размер */
+            aspect-ratio: 1.5 / 1; /* Пропорция картинки Discord Nitro */
+            border-radius: 14px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
             z-index: 9999;
             display: flex;
@@ -184,10 +184,10 @@
 </head>
 <body>
 
-    <!-- ✈️ РЕКЛАМНЫЙ БАННЕР -->
-    <div class="ad-banner-container" id="aviasales-ad" onclick="openAviasales()">
+    <!-- 🚀 РЕКЛАМНЫЙ БАННЕР DISCORD NITRO -->
+    <div class="ad-banner-container" id="discord-ad" onclick="openDiscordAd()">
         <button class="ad-close-btn" onclick="closeAd(event)">✕</button>
-        <img class="ad-banner-img" src="./aviasales.png" alt="Авиасейлс">
+        <img class="ad-banner-img" src="./discord.png" alt="Discord Nitro">
     </div>
 
     <!-- Аудио элементы -->
@@ -314,27 +314,27 @@
             showAdOnce();
         };
 
-        // --- ✈️ ЛОГИКА РЕКЛАМЫ (ПОЯВЛЯЕТСЯ СЛЕВА ВНОВЬ ЧЕРЕЗ 5 СЕК) ---
+        // --- 🚀 ЛОГИКА РЕКЛАМЫ DISCORD NITRO ---
         function showAdOnce() {
             setTimeout(() => {
-                const ad = document.getElementById('aviasales-ad');
+                const ad = document.getElementById('discord-ad');
                 ad.classList.add('show');
             }, 1500);
         }
 
         function closeAd(event) {
             event.stopPropagation();
-            const ad = document.getElementById('aviasales-ad');
+            const ad = document.getElementById('discord-ad');
             ad.classList.remove('show');
 
-            // Запуск таймера на 5 секунд до повторного выезда
+            // Выезжает снова ровно через 5 секунд после закрытия
             setTimeout(() => {
                 ad.classList.add('show');
             }, 5000);
         }
 
-        function openAviasales() {
-            window.open('https://www.aviasales.ru', '_blank');
+        function openDiscordAd() {
+            window.open('https://market.yandex.ru/card/podpiska-discord-nitro-na-1-god-discord-mac-pc-smartfon-region-aktivatsii-rf/103277808298?utm_source_service=img&icookie=TRZDGYScPai3eeDij0GNhozUnQlgQnUT7C%2FYIG5oMUsEEv2KTca38imKtB9R%2BfMeHXqDIlaLj2VumpmvHlhKiWTjGgY%3D&wprid=1785616764705052-10074917918640945720-balancer-l7leveler-kubr-yp-sas-126-BAL&src_pof=972', '_blank');
         }
 
         function checkNickLimit() {
