@@ -119,7 +119,7 @@
         }
         .btn-small:hover { background: rgba(255, 255, 255, 0.25); }
 
-        /* 🪟 Модальные окна с анимацией */
+        /* 🪟 Модальные окна */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.75); display: flex; justify-content: center;
@@ -224,11 +224,57 @@
         }
         .chat-input-area input[type="text"]:focus { border-color: var(--accent-primary); }
 
+        /* 🤩 КНОПКА ЭМОДЗИ С АНИМАЦИЕЙ */
+        .btn-emoji-icon {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+            padding: 0;
+            outline: none;
+        }
+
+        .btn-emoji-icon img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-emoji-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 12px rgba(255, 200, 0, 0.4);
+            transform: scale(1.08);
+        }
+
+        .btn-emoji-icon:active img {
+            animation: emojiClick 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes emojiClick {
+            0% { transform: scale(1); }
+            40% { transform: scale(0.7) rotate(-15deg); }
+            80% { transform: scale(1.25) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        /* 🥳 ПИКТУРА/МЕНЮ ЭМОДЗИ */
         .emoji-picker {
             position: absolute; bottom: 75px; left: 16px; background: rgba(20, 20, 28, 0.95);
-            border: 1px solid var(--border-color); border-radius: 16px; padding: 12px;
-            display: none; grid-template-columns: repeat(6, 1fr); gap: 10px; z-index: 100; max-height: 220px; overflow-y: auto;
-            backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid var(--border-color); border-radius: 18px; padding: 14px;
+            display: none; grid-template-columns: repeat(6, 1fr); gap: 10px; z-index: 100; max-height: 240px; overflow-y: auto;
+            backdrop-filter: blur(14px); box-shadow: 0 12px 35px rgba(0,0,0,0.6);
+            animation: emojiPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes emojiPop {
+            from { opacity: 0; transform: translateY(10px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .emoji-picker span, .emoji-picker img { cursor: pointer; font-size: 1.4rem; text-align: center; transition: transform 0.15s; }
@@ -470,7 +516,10 @@
         </div>
 
         <div class="chat-input-area" id="input-area">
-            <button class="btn-small" onclick="toggleEmojiPicker()" style="font-size: 1.1rem; padding: 6px 10px;">😀</button>
+            <!-- 🤩 КНОПКА СКАЧАННОГО ЭМОДЗИ С АНИМАЦИЕЙ -->
+            <button class="btn-emoji-icon" onclick="toggleEmojiPicker()" title="Выбрать эмодзи">
+                <img src="./emoji-icon.png" alt="Emoji">
+            </button>
             
             <label class="btn-small" style="font-size: 1.1rem; padding: 6px 10px; cursor: pointer;" title="Отправить картинку или файл">
                 📎
@@ -516,7 +565,7 @@
         let currentUser = localStorage.getItem('chat_username') || "";
         let isCooldown = false;
         let isNitroUser = false;
-        let hasUnsavedProfileChanges = false; // Флаг несохраненных изменений
+        let hasUnsavedProfileChanges = false;
         let nickHistory = JSON.parse(localStorage.getItem('chat_nick_history') || "[]");
         let cachedProfiles = {};
 
@@ -529,7 +578,6 @@
             showAdOnce();
         };
 
-        // Защита от случайного закрытия вкладки при несохраненных данных
         window.addEventListener('beforeunload', (e) => {
             if (hasUnsavedProfileChanges) {
                 e.preventDefault();
@@ -662,7 +710,6 @@
             picker.style.display = val === 'custom' ? 'block' : 'none';
         }
 
-        /* Мгновенный визуальный предпросмотр (Черновик) */
         function updateLivePreview() {
             hasUnsavedProfileChanges = true;
             document.getElementById('profile-draft-warning').style.display = 'block';
@@ -735,7 +782,6 @@
             }
         }
 
-        /* Сохранение официальных изменений в Базу Данных */
         function saveNitroStyle() {
             if (!isNitroUser) { alert("Только для Nitro!"); return; }
             
@@ -933,7 +979,6 @@
             }
         }
 
-        // --- 🎨 NITRO КАСТОМНЫЕ ЭМОДЗИ ---
         function uploadCustomEmoji(e) {
             const file = e.target.files[0];
             if (!file || file.size > 1 * 1024 * 1024) { alert("Эмодзи до 1 МБ!"); return; }
