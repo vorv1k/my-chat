@@ -495,7 +495,7 @@
             nitroReqRef.child(user).remove();
         }
 
-        // --- 🎨 NITRO КАСТОМНЫЕ ЭМОДЗИ ---
+        // --- 🎨 NITRO КАСТОМНЫЕ ЭМОДЗИ (ПЕРСОНАЛЬНЫЕ) ---
         function uploadCustomEmoji(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -506,9 +506,10 @@
 
             const reader = new FileReader();
             reader.onload = function(evt) {
+                // Привязываем владельца (owner) к загружаемому эмодзи
                 customEmojisRef.push({
                     url: evt.target.result,
-                    owner: currentUser
+                    owner: currentUser.toLowerCase()
                 });
             };
             reader.readAsDataURL(file);
@@ -521,11 +522,14 @@
                 if (snap.exists()) {
                     snap.forEach(child => {
                         const data = child.val();
-                        const img = document.createElement('img');
-                        img.src = data.url;
-                        img.className = 'custom-emoji';
-                        img.onclick = () => addCustomEmoji(data.url);
-                        container.appendChild(img);
+                        // Фильтруем: показываем эмодзи только текущему владельцу
+                        if (data.owner && data.owner.toLowerCase() === currentUser.toLowerCase()) {
+                            const img = document.createElement('img');
+                            img.src = data.url;
+                            img.className = 'custom-emoji';
+                            img.onclick = () => addCustomEmoji(data.url);
+                            container.appendChild(img);
+                        }
                     });
                 }
             });
