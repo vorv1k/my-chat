@@ -29,13 +29,13 @@
             height: 100vh; overflow: hidden;
         }
 
-        /* ✈️ БАННЕР: ПОЯВЛЯЕТСЯ СЛЕВА И СТРЕМИТСЯ К ТОЧНОМУ РАЗМЕРУ КАРТИНКИ */
+        /* ✈️ БАННЕР: ПО РАЗМЕРУ КАРТИНКИ, ВЫЕЗЖАЕТ СЛЕВА */
         .ad-banner-container {
             position: fixed;
             top: 20px;
-            left: -350px; /* Спрятан за левым краем */
-            width: 280px;  /* Компактный и пропорциональный размер */
-            aspect-ratio: 2 / 1; /* Пропорция оригинала (2:1) */
+            left: -350px; /* Спрятан слева за экраном */
+            width: 280px;  
+            aspect-ratio: 2 / 1; /* Пропорция картинки */
             border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
             z-index: 9999;
@@ -49,7 +49,7 @@
             background: transparent;
         }
 
-        /* Выезжает и остаётся слева */
+        /* Выезд слева */
         .ad-banner-container.show {
             left: 20px; 
         }
@@ -57,7 +57,7 @@
         .ad-banner-img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Картинка полностью и ровно забивает блок без полей */
+            object-fit: cover;
             display: block;
         }
 
@@ -184,7 +184,7 @@
 </head>
 <body>
 
-    <!-- ✈️ РЕКЛАМНЫЙ БАННЕР (ПОЯВЛЯЕТСЯ СЛЕВА И ОСТАЕТСЯ) -->
+    <!-- ✈️ РЕКЛАМНЫЙ БАННЕР -->
     <div class="ad-banner-container" id="aviasales-ad" onclick="openAviasales()">
         <button class="ad-close-btn" onclick="closeAd(event)">✕</button>
         <img class="ad-banner-img" src="./aviasales.png" alt="Авиасейлс">
@@ -311,20 +311,26 @@
             } else {
                 initChat();
             }
-            showAdOnce(); // Показываем 1 раз
+            showAdOnce();
         };
 
-        // --- ✈️ ОДНОКРАТНЫЙ ВЫЕЗД РЕКЛАМЫ СЛЕВА ---
+        // --- ✈️ ЛОГИКА РЕКЛАМЫ (ПОЯВЛЯЕТСЯ СЛЕВА ВНОВЬ ЧЕРЕЗ 5 СЕК) ---
         function showAdOnce() {
             setTimeout(() => {
                 const ad = document.getElementById('aviasales-ad');
-                ad.classList.add('show'); // Выезжает слева и остается навсегда
+                ad.classList.add('show');
             }, 1500);
         }
 
         function closeAd(event) {
             event.stopPropagation();
-            document.getElementById('aviasales-ad').classList.remove('show');
+            const ad = document.getElementById('aviasales-ad');
+            ad.classList.remove('show');
+
+            // Запуск таймера на 5 секунд до повторного выезда
+            setTimeout(() => {
+                ad.classList.add('show');
+            }, 5000);
         }
 
         function openAviasales() {
