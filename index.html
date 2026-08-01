@@ -59,7 +59,8 @@
 
         .modal {
             background: var(--bg-chat); padding: 25px; border-radius: 16px;
-            width: 340px; border: 1px solid var(--border-color); text-align: center;
+            width: 350px; border: 1px solid var(--border-color); text-align: center;
+            max-height: 90vh; overflow-y: auto;
         }
 
         .modal input {
@@ -73,6 +74,7 @@
             background: var(--bg-chat); backdrop-filter: blur(12px);
             border-radius: 20px; display: flex; flex-direction: column;
             border: 1px solid var(--border-color);
+            position: relative;
         }
 
         .chat-header {
@@ -98,16 +100,29 @@
         }
 
         .message .username { font-size: 0.75rem; font-weight: bold; color: var(--accent-primary); margin-bottom: 4px; }
+        .message-img { max-width: 100%; max-height: 250px; border-radius: 8px; margin-top: 5px; cursor: pointer; }
+        .message-file { display: inline-block; padding: 6px 10px; background: rgba(255,255,255,0.1); border-radius: 6px; color: var(--accent-primary); text-decoration: none; font-size: 0.85rem; margin-top: 5px; }
 
         .chat-input-area {
             padding: 15px; background: rgba(15, 15, 20, 0.8);
-            border-top: 1px solid var(--border-color); display: flex; gap: 10px;
+            border-top: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center;
+            position: relative;
         }
 
-        .chat-input-area input {
+        .chat-input-area input[type="text"] {
             flex: 1; padding: 10px 15px; border-radius: 20px;
             border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; outline: none;
         }
+
+        .emoji-picker {
+            position: absolute; bottom: 65px; left: 15px; background: #1a1a20;
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 10px; display: none; grid-template-columns: repeat(6, 1fr); gap: 8px;
+            z-index: 100; max-height: 180px; overflow-y: auto;
+        }
+
+        .emoji-picker span { cursor: pointer; font-size: 1.3rem; text-align: center; transition: transform 0.1s; }
+        .emoji-picker span:hover { transform: scale(1.2); }
 
         .admin-panel { display: flex; flex-direction: column; gap: 10px; text-align: left; }
     </style>
@@ -135,7 +150,15 @@
             <div class="admin-panel" style="margin-top: 15px;">
                 <button class="btn-small" style="background: linear-gradient(45deg, #ff0055, #ff5000); padding: 10px; font-weight: bold;" onclick="toggleAbuseMusic()">💥 АДМИН АБЬЮЗ (Музыка)</button>
                 <hr style="border-color: var(--border-color); margin: 5px 0;">
+                
                 <input type="text" id="target-user" placeholder="Ник пользователя...">
+                
+                <!-- Кнопки управления администраторами -->
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn-small" style="background:#9c27b0; flex:1;" onclick="addAdmin()">⭐ Выдать Админку</button>
+                    <button class="btn-small" style="background:#607d8b; flex:1;" onclick="removeAdmin()">❌ Снять Админку</button>
+                </div>
+
                 <button class="btn-small" style="background:#ff4d4d;" onclick="banUser()">🚫 Забанить</button>
                 <button class="btn-small" style="background:#4caf50;" onclick="unbanUser()">🔓 Разбанить</button>
                 <button class="btn-small" style="background:#2196f3;" onclick="allowNickChange()">🔄 Сбросить лимит ников человеку</button>
@@ -161,7 +184,24 @@
 
         <div class="chat-messages" id="chat-messages"></div>
 
+        <!-- Панель Выбора Эмодзи -->
+        <div class="emoji-picker" id="emoji-picker">
+            <span onclick="addEmoji('😀')">😀</span><span onclick="addEmoji('😂')">😂</span><span onclick="addEmoji('😍')">😍</span>
+            <span onclick="addEmoji('😎')">😎</span><span onclick="addEmoji('😭')">😭</span><span onclick="addEmoji('🔥')">🔥</span>
+            <span onclick="addEmoji('👍')">👍</span><span onclick="addEmoji('❤️')">❤️</span><span onclick="addEmoji('🎉')">🎉</span>
+            <span onclick="addEmoji('💩')">💩</span><span onclick="addEmoji('💀')">💀</span><span onclick="addEmoji('🤡')">🤡</span>
+            <span onclick="addEmoji('🤔')">🤔</span><span onclick="addEmoji('😡')">😡</span><span onclick="addEmoji('👀')">👀</span>
+            <span onclick="addEmoji('🚀')">🚀</span><span onclick="addEmoji('✨')">✨</span><span onclick="addEmoji('💯')">💯</span>
+        </div>
+
         <div class="chat-input-area">
+            <button class="btn-small" onclick="toggleEmojiPicker()" style="font-size: 1.1rem; padding: 6px 10px;">😀</button>
+            
+            <label class="btn-small" style="font-size: 1.1rem; padding: 6px 10px; cursor: pointer;" title="Отправить картинку или файл">
+                📎
+                <input type="file" id="file-input" style="display: none;" onchange="sendFile(event)">
+            </label>
+
             <input type="text" id="message-input" placeholder="Напишите сообщение..." onkeypress="if(event.key==='Enter') sendMessage()">
             <button class="glow-button" id="send-btn" onclick="sendMessage()">Отправить</button>
         </div>
@@ -185,13 +225,12 @@
         const resetNickRef = database.ref('resetNickRequests');
         const usersRef = database.ref('users');
         const musicRef = database.ref('admin_music');
+        const adminsRef = database.ref('admins'); // Ссылка на список администраторов
 
-        const ADMIN_NICKNAME = "Anton"; 
+        const MAIN_ADMIN = "Anton"; // Создатель сайта
 
         let currentUser = localStorage.getItem('chat_username') || "";
         let isCooldown = false;
-
-        // Данные о попытках смены ника (сохраняются в браузер)
         let nickHistory = JSON.parse(localStorage.getItem('chat_nick_history') || "[]");
 
         window.onload = function() {
@@ -202,14 +241,11 @@
             }
         };
 
-        // Функция проверки лимита (3 раза в 24 часа)
         function checkNickLimit() {
             const now = Date.now();
             const ONE_DAY = 24 * 60 * 60 * 1000;
-            // Оставляем только попытки за последние 24 часа
             nickHistory = nickHistory.filter(time => now - time < ONE_DAY);
             localStorage.setItem('chat_nick_history', JSON.stringify(nickHistory));
-
             return nickHistory.length < 3;
         }
 
@@ -222,7 +258,6 @@
                 return;
             }
 
-            // Если проверяем смену существующего ника на новый
             if (currentUser && currentUser !== name && !checkNickLimit()) {
                 showError("⚠️ Достигнут лимит: сменить ник можно только 3 раза в день!");
                 return;
@@ -234,7 +269,6 @@
                 return;
             }
 
-            // Если сменяется существующий ник — освобождаем его
             if (currentUser && currentUser !== name) {
                 usersRef.child(currentUser.toLowerCase()).remove();
                 nickHistory.push(Date.now());
@@ -260,16 +294,27 @@
 
         function initChat() {
             document.getElementById('user-display').innerText = `@${currentUser}`;
-            
-            if (currentUser.toLowerCase() === ADMIN_NICKNAME.toLowerCase()) {
-                document.getElementById('admin-btn').style.display = 'inline-block';
-            } else {
-                document.getElementById('admin-btn').style.display = 'none';
-            }
+            checkAdminRights();
 
             listenForMessages();
             listenForAdminResets();
             listenForMusic();
+        }
+
+        // Проверка прав администратора
+        function checkAdminRights() {
+            if (currentUser.toLowerCase() === MAIN_ADMIN.toLowerCase()) {
+                document.getElementById('admin-btn').style.display = 'inline-block';
+                return;
+            }
+
+            adminsRef.child(currentUser.toLowerCase()).on('value', (snapshot) => {
+                if (snapshot.exists() && snapshot.val() === true) {
+                    document.getElementById('admin-btn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('admin-btn').style.display = 'none';
+                }
+            });
         }
 
         function showError(msg) {
@@ -278,12 +323,24 @@
             err.style.display = 'block';
         }
 
-        async function sendMessage() {
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emoji-picker');
+            picker.style.display = picker.style.display === 'grid' ? 'none' : 'grid';
+        }
+
+        function addEmoji(emoji) {
+            const input = document.getElementById('message-input');
+            input.value += emoji;
+            toggleEmojiPicker();
+            input.focus();
+        }
+
+        async function sendMessage(fileData = null) {
             if (isCooldown) return;
 
             const input = document.getElementById('message-input');
             const text = input.value.trim();
-            if (!text) return;
+            if (!text && !fileData) return;
 
             const banSnapshot = await bansRef.child(currentUser).once('value');
             if (banSnapshot.exists() && banSnapshot.val() === true) {
@@ -291,14 +348,44 @@
                 return;
             }
 
-            messagesRef.push({
+            const msgObj = {
                 user: currentUser,
                 text: text,
                 timestamp: Date.now()
-            });
+            };
+
+            if (fileData) {
+                msgObj.file = fileData.url;
+                msgObj.fileType = fileData.type;
+                msgObj.fileName = fileData.name;
+            }
+
+            messagesRef.push(msgObj);
 
             input.value = '';
             startCooldown(3);
+        }
+
+        function sendFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 3 * 1024 * 1024) {
+                alert("⚠️ Файл слишком большой! Выберите файл размером до 3 МБ.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileType = file.type.startsWith('image/') ? 'image' : 'file';
+                sendMessage({
+                    url: e.target.result,
+                    type: fileType,
+                    name: file.name
+                });
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
         }
 
         function startCooldown(seconds) {
@@ -328,21 +415,35 @@
                 container.innerHTML = '';
                 snapshot.forEach((child) => {
                     const data = child.val();
-                    renderMessage(data.user, data.text, data.user === currentUser);
+                    renderMessage(data);
                 });
                 container.scrollTop = container.scrollHeight;
             });
         }
 
-        function renderMessage(user, text, isMy) {
+        function renderMessage(data) {
             const container = document.getElementById('chat-messages');
+            const isMy = data.user === currentUser;
             const div = document.createElement('div');
             div.className = `message ${isMy ? 'my-message' : ''}`;
-            div.innerHTML = `<div class="username">${user}</div><div>${text}</div>`;
+            
+            let html = `<div class="username">${data.user}</div>`;
+            if (data.text) {
+                html += `<div>${data.text}</div>`;
+            }
+            if (data.file) {
+                if (data.fileType === 'image') {
+                    html += `<img src="${data.file}" class="message-img" onclick="window.open('${data.file}')">`;
+                } else {
+                    html += `<a href="${data.file}" download="${data.fileName}" class="message-file">📄 ${data.fileName}</a>`;
+                }
+            }
+
+            div.innerHTML = html;
             container.appendChild(div);
         }
 
-        // --- 👑 АДМИН ПАНЕЛЬ И МУЗЫКА ---
+        // --- 👑 АДМИН ПАНЕЛЬ И УПРАВЛЕНИЕ АДМИНАМИ ---
         function openAdmin() {
             document.getElementById('admin-modal').style.display = 'flex';
         }
@@ -368,6 +469,28 @@
                     audio.currentTime = 0;
                 }
             });
+        }
+
+        // Выдать права админа
+        function addAdmin() {
+            const user = document.getElementById('target-user').value.trim();
+            if (user) {
+                adminsRef.child(user.toLowerCase()).set(true);
+                alert(`⭐ Пользователь ${user} теперь Администратор!`);
+            }
+        }
+
+        // Снять права админа
+        function removeAdmin() {
+            const user = document.getElementById('target-user').value.trim();
+            if (user) {
+                if (user.toLowerCase() === MAIN_ADMIN.toLowerCase()) {
+                    alert("❌ Нельзя снять права у Главного Администратора!");
+                    return;
+                }
+                adminsRef.child(user.toLowerCase()).remove();
+                alert(`❌ Пользователь ${user} больше не Администратор.`);
+            }
         }
 
         function banUser() {
