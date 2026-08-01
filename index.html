@@ -8,29 +8,68 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
+    <!-- Подключаем красивейшие шрифты Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@600;800&family=Pacifico&family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg-chat: rgba(22, 22, 26, 0.85);
-            --bg-input: rgba(45, 45, 52, 0.9);
+            --bg-chat: rgba(18, 18, 24, 0.75);
+            --bg-input: rgba(35, 35, 45, 0.85);
             --text-main: #f0f0f0;
             --text-muted: #aaaaaa;
             --accent-primary: #00f2fe;
             --accent-secondary: #4facfe;
             --nitro-color: #ff007f;
-            --btn-glow: 0 0 15px rgba(0, 242, 254, 0.6);
+            --btn-glow: 0 0 15px rgba(0, 242, 254, 0.5);
             --border-color: rgba(255, 255, 255, 0.12);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        /* 🎭 Nitro Рамки */
+        .frame-none { border: 2px solid var(--border-color); }
+        .frame-neon { border: 3px solid #00f2fe !important; box-shadow: 0 0 12px #00f2fe; }
+        .frame-rainbow { 
+            border: 3px solid transparent !important; 
+            background: linear-gradient(#111, #111) padding-box, linear-gradient(45deg, red, yellow, green, cyan, blue, magenta) border-box; 
+        }
+        .frame-fire { border: 3px solid #ff4500 !important; box-shadow: 0 0 14px #ff4500, 0 0 20px #ff8c00; }
+        .frame-gold { border: 3px solid #ffd700 !important; box-shadow: 0 0 12px #ffd700; }
 
-        body {
-            background-color: #050505;
-            color: var(--text-main);
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden;
+        /* 🌈 Радужный Текст */
+        .rainbow-text {
+            background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+            background-size: 200% auto;
+            color: transparent !important;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: rainbow 3s linear infinite;
         }
 
-        /* 🚀 БАННЕР 1: DISCORD NITRO */
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        /* 🌌 Анимированный задний фон */
+        body {
+            background: linear-gradient(-45deg, #050508, #120a2a, #0a1826, #1a051d);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-main);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden; font-family: 'Roboto', sans-serif;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* 🚀 БАННЕРЫ */
         .ad-banner-container.discord {
             position: fixed; top: 20px; left: -350px; width: 260px; aspect-ratio: 1.5 / 1;
             border-radius: 14px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7); z-index: 9999;
@@ -39,7 +78,6 @@
             border: 1px solid rgba(255, 255, 255, 0.2); background: transparent;
         }
 
-        /* ✈️ БАННЕР 2: AVIASALES */
         .ad-banner-container.aviasales {
             position: fixed; top: 210px; left: -350px; width: 260px; aspect-ratio: 2 / 1;
             border-radius: 14px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7); z-index: 9998;
@@ -64,133 +102,158 @@
             color: #000; border: none; border-radius: 20px; cursor: pointer;
             font-weight: bold; padding: 10px 20px; transition: all 0.3s ease; box-shadow: var(--btn-glow);
         }
+        .glow-button:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0, 242, 254, 0.8); }
 
         .btn-nitro {
             background: linear-gradient(45deg, #ff007f, #7928ca);
             color: #fff; border: none; border-radius: 12px; cursor: pointer;
-            font-weight: bold; padding: 5px 12px; font-size: 0.8rem;
-            box-shadow: 0 0 10px rgba(255, 0, 127, 0.5); transition: transform 0.2s;
+            font-weight: bold; padding: 6px 14px; font-size: 0.8rem;
+            box-shadow: 0 0 12px rgba(255, 0, 127, 0.5); transition: all 0.3s ease;
         }
-        .btn-nitro:hover { transform: scale(1.05); }
+        .btn-nitro:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 0, 127, 0.8); }
 
         .btn-small {
             background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border-color);
-            color: var(--text-main); padding: 5px 10px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;
+            color: var(--text-main); padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;
+            transition: all 0.2s; backdrop-filter: blur(5px);
         }
+        .btn-small:hover { background: rgba(255, 255, 255, 0.25); }
 
+        /* 🪟 Модальные окна с анимацией */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center;
-            align-items: center; z-index: 1000; backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.75); display: flex; justify-content: center;
+            align-items: center; z-index: 1000; backdrop-filter: blur(10px);
+            animation: fadeIn 0.3s ease;
         }
 
         .modal {
-            background: var(--bg-chat); padding: 25px; border-radius: 16px;
-            width: 420px; border: 1px solid var(--border-color); text-align: center;
+            background: var(--bg-chat); padding: 25px; border-radius: 20px;
+            width: 440px; border: 1px solid var(--border-color); text-align: center;
             max-height: 90vh; overflow-y: auto; position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
         .modal input, .modal select, .modal textarea {
-            width: 100%; padding: 8px 12px; margin: 4px 0 10px 0; border-radius: 8px;
+            width: 100%; padding: 10px 14px; margin: 6px 0 12px 0; border-radius: 10px;
             border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; outline: none;
         }
 
         .modal textarea { resize: none; height: 60px; }
 
+        /* 💬 Контейнер Чота */
         .chat-container {
-            width: 100%; max-width: 750px; height: 90vh; background: var(--bg-chat);
-            backdrop-filter: blur(12px); border-radius: 20px; display: flex;
+            width: 100%; max-width: 800px; height: 92vh; background: var(--bg-chat);
+            backdrop-filter: blur(16px); border-radius: 24px; display: flex;
             flex-direction: column; border: 1px solid var(--border-color); position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6); animation: slideUp 0.6s ease;
         }
 
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
         .chat-header {
-            padding: 15px 20px; background: rgba(15, 15, 20, 0.7);
+            padding: 16px 22px; background: rgba(10, 10, 15, 0.6);
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color); border-radius: 24px 24px 0 0;
         }
 
         .chat-messages {
-            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
         }
 
+        /* 📨 Анимация сообщений */
         .message {
-            max-width: 75%; padding: 10px 14px; border-radius: 14px;
+            max-width: 80%; padding: 12px 16px; border-radius: 18px;
             background: var(--bg-input); align-self: flex-start; word-wrap: break-word;
-            border: 1px solid rgba(255, 255, 255, 0.08); display: flex; gap: 10px; align-items: flex-start;
+            border: 1px solid rgba(255, 255, 255, 0.08); display: flex; gap: 12px; align-items: flex-start;
+            animation: msgAppear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        @keyframes msgAppear {
+            from { opacity: 0; transform: translateY(15px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .message.my-message {
-            background: linear-gradient(135deg, rgba(45,45,55,0.9), rgba(20,25,35,0.9));
-            align-self: flex-end; border: 1px solid rgba(0, 242, 254, 0.4); flex-direction: row-reverse;
+            background: linear-gradient(135deg, rgba(30, 45, 65, 0.85), rgba(15, 20, 35, 0.95));
+            align-self: flex-end; border: 1px solid rgba(0, 242, 254, 0.3); flex-direction: row-reverse;
         }
 
         .msg-avatar {
-            width: 36px; height: 36px; border-radius: 50%; object-fit: cover; cursor: pointer;
-            border: 1px solid var(--border-color); flex-shrink: 0; background: #222;
+            width: 42px; height: 42px; border-radius: 50%; object-fit: cover; cursor: pointer;
+            flex-shrink: 0; background: #222; transition: transform 0.2s;
         }
+        .msg-avatar:hover { transform: scale(1.1); }
 
         .msg-content { flex: 1; }
 
-        .message-header {
-            display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
-        }
-
-        .message.my-message .message-header {
-            justify-content: flex-end;
-        }
+        .message-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .message.my-message .message-header { justify-content: flex-end; }
 
         .message .username { 
-            font-size: 0.75rem; font-weight: bold; color: var(--accent-primary); 
-            display: flex; align-items: center; gap: 4px; cursor: pointer; 
+            font-size: 0.85rem; font-weight: bold; color: var(--accent-primary); 
+            display: flex; align-items: center; gap: 6px; cursor: pointer; 
         }
 
-        .msg-time {
-            font-size: 0.65rem; color: var(--text-muted); margin-left: 4px;
+        .msg-time { font-size: 0.68rem; color: var(--text-muted); margin-left: 4px; }
+
+        .nitro-badge { 
+            background: linear-gradient(45deg, #ff007f, #7928ca); color: #fff; 
+            font-size: 0.65rem; padding: 2px 6px; border-radius: 6px; font-weight: bold;
+            box-shadow: 0 0 8px rgba(255,0,127,0.5);
         }
 
-        .nitro-badge { background: linear-gradient(45deg, #ff007f, #7928ca); color: #fff; font-size: 0.65rem; padding: 1px 5px; border-radius: 6px; }
-
-        .message-img { max-width: 100%; max-height: 250px; border-radius: 8px; margin-top: 5px; cursor: pointer; }
+        .message-img { max-width: 100%; max-height: 250px; border-radius: 12px; margin-top: 6px; cursor: pointer; }
         .custom-emoji { width: 32px; height: 32px; vertical-align: middle; }
 
         .chat-input-area {
-            padding: 15px; background: rgba(15, 15, 20, 0.8);
+            padding: 16px; background: rgba(10, 10, 15, 0.7);
             border-top: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center; position: relative;
+            border-radius: 0 0 24px 24px;
         }
 
         .chat-input-area input[type="text"] {
-            flex: 1; padding: 10px 15px; border-radius: 20px;
+            flex: 1; padding: 12px 18px; border-radius: 20px;
             border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; outline: none;
+            transition: border 0.2s;
         }
+        .chat-input-area input[type="text"]:focus { border-color: var(--accent-primary); }
 
         .emoji-picker {
-            position: absolute; bottom: 65px; left: 15px; background: #1a1a20;
-            border: 1px solid var(--border-color); border-radius: 12px; padding: 10px;
-            display: none; grid-template-columns: repeat(6, 1fr); gap: 8px; z-index: 100; max-height: 200px; overflow-y: auto;
+            position: absolute; bottom: 75px; left: 16px; background: rgba(20, 20, 28, 0.95);
+            border: 1px solid var(--border-color); border-radius: 16px; padding: 12px;
+            display: none; grid-template-columns: repeat(6, 1fr); gap: 10px; z-index: 100; max-height: 220px; overflow-y: auto;
+            backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .emoji-picker span, .emoji-picker img { cursor: pointer; font-size: 1.3rem; text-align: center; transition: transform 0.1s; }
-        .emoji-picker span:hover, .emoji-picker img:hover { transform: scale(1.2); }
+        .emoji-picker span, .emoji-picker img { cursor: pointer; font-size: 1.4rem; text-align: center; transition: transform 0.15s; }
+        .emoji-picker span:hover, .emoji-picker img:hover { transform: scale(1.3); }
 
-        .admin-panel { display: flex; flex-direction: column; gap: 8px; text-align: left; }
-        .req-card { background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .admin-panel { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+        .req-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
 
         /* 🎴 ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ */
         .profile-card {
-            width: 100%; border-radius: 12px; overflow: hidden; background: #111116; border: 1px solid var(--border-color);
+            width: 100%; border-radius: 16px; overflow: hidden; background: #111116; border: 1px solid var(--border-color);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
         }
         .profile-banner {
-            height: 100px; background: linear-gradient(45deg, #222, #444); background-size: cover; background-position: center; position: relative;
+            height: 110px; background: linear-gradient(45deg, #222, #444); background-size: cover; background-position: center; position: relative;
         }
         .profile-avatar-container {
-            position: relative; margin-top: -40px; text-align: center;
+            position: relative; margin-top: -45px; text-align: center;
         }
         .profile-avatar {
-            width: 80px; height: 80px; border-radius: 50%; border: 3px solid #111116; object-fit: cover; background: #222;
+            width: 85px; height: 85px; border-radius: 50%; object-fit: cover; background: #222;
         }
-        .profile-info { padding: 15px; text-align: center; }
-        .profile-username { font-size: 1.1rem; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 6px; }
-        .profile-bio { font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; font-style: italic; word-break: break-word; }
+        .profile-info { padding: 16px; text-align: center; }
+        .profile-username { font-size: 1.2rem; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 6px; }
+        .profile-bio { font-size: 0.88rem; color: var(--text-muted); margin-top: 8px; font-style: italic; word-break: break-word; }
     </style>
 </head>
 <body>
@@ -228,7 +291,7 @@
                 <div class="profile-card">
                     <div class="profile-banner" id="my-profile-banner-preview"></div>
                     <div class="profile-avatar-container">
-                        <img class="profile-avatar" id="my-profile-avatar-preview" src="https://via.placeholder.com/80" alt="Avatar">
+                        <img class="profile-avatar frame-none" id="my-profile-avatar-preview" src="https://via.placeholder.com/80" alt="Avatar">
                     </div>
                     <div class="profile-info">
                         <div class="profile-username" id="my-profile-name"></div>
@@ -236,23 +299,51 @@
                     </div>
                 </div>
 
-                <!-- Настройки только для NITRO -->
+                <!-- ⭐ Украшения & Кастомизация Nitro -->
                 <div id="nitro-profile-settings" style="display: none; margin-top: 15px; text-align: left;">
-                    <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold;">⭐ Кастомизация Nitro:</span>
+                    <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold;">⭐ Кастомизация & Украшения Nitro:</span>
                     
                     <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 8px;">О себе (Описание профиля):</label>
                     <textarea id="my-bio-input" maxlength="100" placeholder="Расскажите о себе..."></textarea>
-                    <button class="btn-small" style="background:#ff007f; width:100%; margin-bottom:10px;" onclick="saveBio()">Сохранить описание</button>
+                    
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Шрифт ника и сообщений:</label>
+                    <select id="my-font-input">
+                        <option value="Roboto">Стандартный (Roboto)</option>
+                        <option value="Montserrat">Montserrat (Современный)</option>
+                        <option value="Orbitron">Orbitron (Киберпанк/Неон)</option>
+                        <option value="Pacifico">Pacifico (Рукописный)</option>
+                        <option value="Press Start 2P">Press Start 2P (Ретро 8-bit)</option>
+                        <option value="Dancing Script">Dancing Script (Изящный)</option>
+                    </select>
 
-                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 8px;">Аватарка (До 1 МБ):</label>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Цвет ника:</label>
+                    <select id="my-color-type" onchange="toggleColorInput(this.value)">
+                        <option value="default">Обычный (Голубой)</option>
+                        <option value="custom">Свой цвет (HEX/Выбор)</option>
+                        <option value="rainbow">🌈 Радужный перелив</option>
+                    </select>
+                    <input type="color" id="my-color-picker" style="display:none; height: 35px; cursor:pointer;" value="#00f2fe">
+
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Рамка аватарки:</label>
+                    <select id="my-frame-input">
+                        <option value="frame-none">Без рамки</option>
+                        <option value="frame-neon">💎 Неоновый свет</option>
+                        <option value="frame-rainbow">🌈 Радужный градиент</option>
+                        <option value="frame-fire">🔥 Огненная аура</option>
+                        <option value="frame-gold">👑 Золотой блеск</option>
+                    </select>
+
+                    <button class="btn-small" style="background: linear-gradient(45deg, #ff007f, #7928ca); width:100%; margin-top:5px; margin-bottom:10px; font-weight:bold;" onclick="saveNitroStyle()">💾 Сохранить стили Nitro</button>
+
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Аватарка (До 1 МБ):</label>
                     <input type="file" accept="image/*" onchange="uploadAvatar(event)">
 
-                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 8px;">Баннер профиля (До 1.5 МБ):</label>
+                    <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Баннер профиля (До 1.5 МБ):</label>
                     <input type="file" accept="image/*" onchange="uploadBanner(event)">
                 </div>
 
                 <div id="no-nitro-profile-notice" style="display: block; margin-top: 15px; color: var(--text-muted); font-size: 0.8rem;">
-                    🔒 Изменение описания, баннера и аватарки доступно только владельцам <b style="color:#ff007f;">Nitro</b>.
+                    🔒 Изменение шрифта, рамок, цвета ника, баннера и описания доступно только владельцам <b style="color:#ff007f;">Nitro</b>.
                 </div>
             </div>
             <button class="btn-small" style="width:100%; margin-top: 15px;" onclick="closeProfile()">Закрыть</button>
@@ -265,7 +356,7 @@
             <div class="profile-card">
                 <div class="profile-banner" id="view-user-banner"></div>
                 <div class="profile-avatar-container">
-                    <img class="profile-avatar" id="view-user-avatar" src="https://via.placeholder.com/80" alt="Avatar">
+                    <img class="profile-avatar frame-none" id="view-user-avatar" src="https://via.placeholder.com/80" alt="Avatar">
                 </div>
                 <div class="profile-info">
                     <div class="profile-username" id="view-user-name"></div>
@@ -282,7 +373,6 @@
             <h2>👑 Панель Администратора</h2>
             <div class="admin-panel" style="margin-top: 15px;">
                 
-                <!-- Запросы Nitro (Главный Админ) -->
                 <div id="nitro-requests-sec" style="display:none; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
                     <span style="font-size: 0.85rem; color: #ff007f; font-weight: bold;">⭐ Запросы на NITRO:</span>
                     <div id="nitro-requests-list" style="margin-top: 5px;"></div>
@@ -304,7 +394,6 @@
                 
                 <input type="text" id="target-user" placeholder="Ник пользователя...">
                 
-                <!-- Наказания -->
                 <label style="font-size: 0.75rem; color: var(--text-muted);">Причина наказания:</label>
                 <input type="text" id="punish-reason" placeholder="Например: Спам / Неадекват">
 
@@ -354,7 +443,6 @@
 
         <div class="chat-messages" id="chat-messages"></div>
 
-        <!-- Панель Эмодзи -->
         <div class="emoji-picker" id="emoji-picker">
             <div id="standard-emojis" style="display: contents;">
                 <span onclick="addEmoji('😀')">😀</span><span onclick="addEmoji('😂')">😂</span><span onclick="addEmoji('😍')">😍</span>
@@ -364,7 +452,6 @@
             </div>
             <div id="custom-emojis-container" style="display: contents;"></div>
             
-            <!-- Загрузка личного эмодзи (Только Nitro) -->
             <label id="add-custom-emoji-btn" style="display:none; grid-column: span 6; background: rgba(255,0,127,0.2); border: 1px dashed #ff007f; border-radius: 8px; padding: 5px; cursor: pointer; text-align: center; font-size: 0.75rem; margin-top: 5px;">
                 ➕ Добавить свой Nitro-эмодзи
                 <input type="file" accept="image/*" style="display:none;" onchange="uploadCustomEmoji(event)">
@@ -453,7 +540,7 @@
         }
 
         function checkNickLimit() {
-            if (isNitroUser) return true; // Nitro = БЕЗЛИМИТ
+            if (isNitroUser) return true;
             const now = Date.now();
             const ONE_DAY = 24 * 60 * 60 * 1000;
             nickHistory = nickHistory.filter(time => now - time < ONE_DAY);
@@ -520,11 +607,17 @@
             loadCustomEmojis();
         }
 
-        // --- 👤 НАСТРОЙКИ И ПРОСМОТР ПРОФИЛЯ ---
+        // --- 👤 УПРАВЛЕНИЕ ПРОФИЛЕМ & NITRO СТИЛЯМИ ---
         function listenForProfiles() {
             userProfilesRef.on('value', (snap) => {
                 cachedProfiles = snap.val() || {};
                 renderUserProfilePreview();
+                // Перерисовать сообщения, чтобы применить обновленные шрифты/стили
+                messagesRef.limitToLast(50).once('value', (snapshot) => {
+                    const container = document.getElementById('chat-messages');
+                    container.innerHTML = '';
+                    snapshot.forEach((child) => renderMessage(child.val()));
+                });
             });
         }
 
@@ -537,15 +630,27 @@
             document.getElementById('profile-modal').style.display = 'none';
         }
 
+        function toggleColorInput(val) {
+            const picker = document.getElementById('my-color-picker');
+            picker.style.display = val === 'custom' ? 'block' : 'none';
+        }
+
         function renderUserProfilePreview() {
             const prof = cachedProfiles[currentUser.toLowerCase()] || {};
             const avatarImg = document.getElementById('my-profile-avatar-preview');
             const bannerDiv = document.getElementById('my-profile-banner-preview');
             const nameDiv = document.getElementById('my-profile-name');
             const bioDiv = document.getElementById('my-profile-bio-preview');
+            
             const bioInput = document.getElementById('my-bio-input');
+            const fontSelect = document.getElementById('my-font-input');
+            const frameSelect = document.getElementById('my-frame-input');
+            const colorSelect = document.getElementById('my-color-type');
+            const colorPicker = document.getElementById('my-color-picker');
 
             avatarImg.src = prof.avatar || "https://via.placeholder.com/80";
+            avatarImg.className = `profile-avatar ${prof.frame || 'frame-none'}`;
+
             if (prof.banner) {
                 bannerDiv.style.backgroundImage = `url('${prof.banner}')`;
             } else {
@@ -553,23 +658,51 @@
             }
 
             let badge = isNitroUser ? `<span class="nitro-badge">NITRO</span>` : '';
-            nameDiv.innerHTML = `@${currentUser} ${badge}`;
+            
+            let nameStyle = "";
+            let nameClass = "";
+            if (prof.colorType === 'rainbow') nameClass = "rainbow-text";
+            else if (prof.colorType === 'custom' && prof.colorVal) nameStyle = `color: ${prof.colorVal};`;
+            
+            if (prof.font) nameStyle += ` font-family: '${prof.font}', sans-serif;`;
+
+            nameDiv.innerHTML = `<span class="${nameClass}" style="${nameStyle}">@${currentUser}</span> ${badge}`;
             bioDiv.innerText = prof.bio || "О себе не указано";
-            if(bioInput && prof.bio) bioInput.value = prof.bio;
+
+            if (bioInput && prof.bio) bioInput.value = prof.bio;
+            if (fontSelect && prof.font) fontSelect.value = prof.font;
+            if (frameSelect && prof.frame) frameSelect.value = prof.frame;
+            if (colorSelect && prof.colorType) {
+                colorSelect.value = prof.colorType;
+                toggleColorInput(prof.colorType);
+                if (prof.colorVal) colorPicker.value = prof.colorVal;
+            }
         }
 
-        function saveBio() {
-            if (!isNitroUser) { alert("Только для пользователей Nitro!"); return; }
-            const bioText = document.getElementById('my-bio-input').value.trim();
-            userProfilesRef.child(currentUser.toLowerCase()).child('bio').set(bioText);
-            alert("Описание профиля успешно обновлено!");
+        function saveNitroStyle() {
+            if (!isNitroUser) { alert("Только для Nitro!"); return; }
+            
+            const bio = document.getElementById('my-bio-input').value.trim();
+            const font = document.getElementById('my-font-input').value;
+            const frame = document.getElementById('my-frame-input').value;
+            const colorType = document.getElementById('my-color-type').value;
+            const colorVal = document.getElementById('my-color-picker').value;
+
+            userProfilesRef.child(currentUser.toLowerCase()).update({
+                bio: bio,
+                font: font,
+                frame: frame,
+                colorType: colorType,
+                colorVal: colorVal
+            });
+
+            alert("✨ Украшения профиля сохранены!");
         }
 
         function uploadAvatar(e) {
-            if (!isNitroUser) { alert("Только для пользователей Nitro!"); return; }
+            if (!isNitroUser) { alert("Только для Nitro!"); return; }
             const file = e.target.files[0];
-            if (!file) return;
-            if (file.size > 1 * 1024 * 1024) { alert("Аватарка слишком большая! До 1 МБ."); return; }
+            if (!file || file.size > 1 * 1024 * 1024) { alert("Аватарка до 1 МБ!"); return; }
 
             const reader = new FileReader();
             reader.onload = function(evt) {
@@ -579,10 +712,9 @@
         }
 
         function uploadBanner(e) {
-            if (!isNitroUser) { alert("Только для пользователей Nitro!"); return; }
+            if (!isNitroUser) { alert("Только для Nitro!"); return; }
             const file = e.target.files[0];
-            if (!file) return;
-            if (file.size > 1.5 * 1024 * 1024) { alert("Баннер слишком большой! До 1.5 МБ."); return; }
+            if (!file || file.size > 1.5 * 1024 * 1024) { alert("Баннер до 1.5 МБ!"); return; }
 
             const reader = new FileReader();
             reader.onload = function(evt) {
@@ -603,6 +735,8 @@
             const bioDiv = document.getElementById('view-user-bio');
 
             avatarImg.src = prof.avatar || "https://via.placeholder.com/80";
+            avatarImg.className = `profile-avatar ${prof.frame || 'frame-none'}`;
+
             if (prof.banner) {
                 bannerDiv.style.backgroundImage = `url('${prof.banner}')`;
             } else {
@@ -610,7 +744,14 @@
             }
 
             let badge = targetIsNitro ? `<span class="nitro-badge">NITRO</span>` : '';
-            nameDiv.innerHTML = `@${username} ${badge}`;
+            
+            let nameStyle = "";
+            let nameClass = "";
+            if (prof.colorType === 'rainbow') nameClass = "rainbow-text";
+            else if (prof.colorType === 'custom' && prof.colorVal) nameStyle = `color: ${prof.colorVal};`;
+            if (prof.font) nameStyle += ` font-family: '${prof.font}', sans-serif;`;
+
+            nameDiv.innerHTML = `<span class="${nameClass}" style="${nameStyle}">@${username}</span> ${badge}`;
             bioDiv.innerText = prof.bio || "О себе не указано";
 
             document.getElementById('view-profile-modal').style.display = 'flex';
@@ -620,7 +761,7 @@
             document.getElementById('view-profile-modal').style.display = 'none';
         }
 
-        // --- ⭐ NITRO ЛОГИКА ---
+        // --- ⭐ NITRO СТАТУС ---
         function checkNitroStatus() {
             nitroRef.child(currentUser.toLowerCase()).on('value', (snap) => {
                 isNitroUser = snap.exists() && snap.val() === true;
@@ -647,12 +788,9 @@
         }
 
         function requestNitro() {
-            if (isNitroUser) {
-                alert("У вас уже активирован Nitro!");
-                return;
-            }
+            if (isNitroUser) { alert("У вас уже активирован Nitro!"); return; }
             nitroReqRef.child(currentUser).set(Date.now());
-            alert("🚀 Запрос на Nitro отправлен Главном Администратору (Anton) на подтверждение!");
+            alert("🚀 Запрос на Nitro отправлен Главном Администратору (Anton)!");
         }
 
         function checkAdminRights() {
@@ -728,25 +866,18 @@
             nitroReqRef.child(user).remove();
         }
 
-        function rejectNitro(user) {
-            nitroReqRef.child(user).remove();
-        }
+        function rejectNitro(user) { nitroReqRef.child(user).remove(); }
 
         function revokeNitro(userKey) {
-            if (confirm(`Вы уверены, что хотите забрать Nitro у @${userKey}?`)) {
+            if (confirm(`Забрать Nitro у @${userKey}?`)) {
                 nitroRef.child(userKey.toLowerCase()).remove();
-                alert(`Nitro успешно забран у ${userKey}!`);
             }
         }
 
-        // --- 🎨 NITRO КАСТОМНЫЕ ЭМОДЗИ (ПЕРСОНАЛЬНЫЕ) ---
+        // --- 🎨 NITRO КАСТОМНЫЕ ЭМОДЗИ ---
         function uploadCustomEmoji(e) {
             const file = e.target.files[0];
-            if (!file) return;
-            if (file.size > 1 * 1024 * 1024) {
-                alert("Эмодзи слишком большой! До 1 МБ.");
-                return;
-            }
+            if (!file || file.size > 1 * 1024 * 1024) { alert("Эмодзи до 1 МБ!"); return; }
 
             const reader = new FileReader();
             reader.onload = function(evt) {
@@ -784,8 +915,7 @@
 
         function showError(msg) {
             const err = document.getElementById('modal-error');
-            err.innerText = msg;
-            err.style.display = 'block';
+            err.innerText = msg; err.style.display = 'block';
         }
 
         function toggleEmojiPicker() {
@@ -821,19 +951,13 @@
             }
 
             messagesRef.push(msgObj);
-
             input.value = '';
             startCooldown(3);
         }
 
         function sendFile(event) {
             const file = event.target.files[0];
-            if (!file) return;
-
-            if (file.size > 3 * 1024 * 1024) {
-                alert("⚠️ Файл слишком большой! До 3 МБ.");
-                return;
-            }
+            if (!file || file.size > 3 * 1024 * 1024) { alert("Файл до 3 МБ."); return; }
 
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -868,10 +992,7 @@
             messagesRef.limitToLast(50).on('value', (snapshot) => {
                 const container = document.getElementById('chat-messages');
                 container.innerHTML = '';
-                snapshot.forEach((child) => {
-                    const data = child.val();
-                    renderMessage(data);
-                });
+                snapshot.forEach((child) => renderMessage(child.val()));
                 container.scrollTop = container.scrollHeight;
             });
         }
@@ -884,26 +1005,37 @@
             
             const userProf = cachedProfiles[data.user.toLowerCase()] || {};
             const avatarSrc = userProf.avatar || "https://via.placeholder.com/80";
+            const frameClass = userProf.frame || 'frame-none';
 
             let nitroBadge = data.isNitro ? `<span class="nitro-badge">NITRO</span>` : '';
             
-            // ВРЕМЯ ОТПРАВКИ
+            // Время отправки
             const date = new Date(data.timestamp || Date.now());
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
             const timeStr = `${hours}:${minutes}`;
 
+            // Применение стиля ника
+            let nameStyle = "";
+            let nameClass = "";
+            if (userProf.colorType === 'rainbow') nameClass = "rainbow-text";
+            else if (userProf.colorType === 'custom' && userProf.colorVal) nameStyle = `color: ${userProf.colorVal};`;
+            if (userProf.font) nameStyle += ` font-family: '${userProf.font}', sans-serif;`;
+
+            // Применение шрифта сообщения
+            let msgStyle = userProf.font ? `font-family: '${userProf.font}', sans-serif;` : '';
+
             let html = `
-                <img src="${avatarSrc}" class="msg-avatar" onclick="viewUserProfile('${data.user}')">
+                <img src="${avatarSrc}" class="msg-avatar ${frameClass}" onclick="viewUserProfile('${data.user}')">
                 <div class="msg-content">
                     <div class="message-header">
-                        <span class="username" onclick="viewUserProfile('${data.user}')">${data.user}</span>
+                        <span class="username ${nameClass}" style="${nameStyle}" onclick="viewUserProfile('${data.user}')">${data.user}</span>
                         ${nitroBadge}
                         <span class="msg-time">${timeStr}</span>
                     </div>
             `;
             
-            if (data.text) html += `<div>${data.text}</div>`;
+            if (data.text) html += `<div style="${msgStyle}">${data.text}</div>`;
             
             if (data.file) {
                 if (data.fileType === 'image') {
@@ -911,7 +1043,7 @@
                 } else if (data.fileType === 'custom_emoji') {
                     html += `<img src="${data.file}" class="custom-emoji">`;
                 } else {
-                    html += `<a href="${data.file}" download="${data.fileName}" class="message-file">📄 ${data.fileName}</a>`;
+                    html += `<a href="${data.file}" download="${data.fileName}" style="color:var(--accent-primary); font-size:0.85rem;">📄 ${data.fileName}</a>`;
                 }
             }
 
@@ -928,7 +1060,6 @@
                     const now = Date.now();
                     if (banData.until === -1 || banData.until > now) {
                         const dateStr = banData.until === -1 ? "Навсегда" : new Date(banData.until).toLocaleString();
-                        alert(`🚫 ВЫ ЗАБАНЕНЫ!\nПричина: ${banData.reason}\nСрок: ${dateStr}`);
                         document.body.innerHTML = `<h1 style="color:white; text-align:center; margin-top:20%;">🚫 ВЫ ЗАБАНЕНЫ<br><br><span style="font-size:18px;">Причина: ${banData.reason}<br>Истекает: ${dateStr}</span></h1>`;
                     }
                 }
@@ -960,7 +1091,7 @@
 
         function checkProtection(target) {
             if (target.toLowerCase() === MAIN_ADMIN.toLowerCase()) {
-                alert("❌ ЗАЩИТА: Нельзя забанить/замутить или ограничить Главного Админа (Anton)!");
+                alert("❌ ЗАЩИТА: Главного Админа (Anton) нельзя наказать!");
                 return false;
             }
             return true;
@@ -972,7 +1103,6 @@
             const seconds = parseInt(document.getElementById('ban-time').value);
 
             if (!user || !checkProtection(user)) return;
-
             const until = seconds === -1 ? -1 : Date.now() + (seconds * 1000);
             bansRef.child(user.toLowerCase()).set({ reason: reason, until: until });
             alert(`Пользователь ${user} забанен!`);
@@ -984,7 +1114,6 @@
             const seconds = parseInt(document.getElementById('ban-time').value);
 
             if (!user || !checkProtection(user)) return;
-
             const until = seconds === -1 ? -1 : Date.now() + (seconds * 1000);
             mutesRef.child(user.toLowerCase()).set({ reason: reason, until: until });
             alert(`Пользователь ${user} замучен!`);
@@ -992,18 +1121,12 @@
 
         function unbanUser() {
             const user = document.getElementById('target-user').value.trim();
-            if (user) {
-                bansRef.child(user.toLowerCase()).remove();
-                alert(`Пользователь ${user} разбанен!`);
-            }
+            if (user) { bansRef.child(user.toLowerCase()).remove(); alert(`Разбанен: ${user}`); }
         }
 
         function unmuteUser() {
             const user = document.getElementById('target-user').value.trim();
-            if (user) {
-                mutesRef.child(user.toLowerCase()).remove();
-                alert(`Мут снят с ${user}!`);
-            }
+            if (user) { mutesRef.child(user.toLowerCase()).remove(); alert(`Размучен: ${user}`); }
         }
 
         async function toggleAbuseMusic() {
@@ -1014,7 +1137,7 @@
         function listenForMusic() {
             const audio = document.getElementById('abuse-audio');
             musicRef.on('value', (snapshot) => {
-                if (snapshot.val()) audio.play().catch(e => console.log("Кликните по экрану"));
+                if (snapshot.val()) audio.play().catch(e => console.log("Клик по экрану!"));
                 else { audio.pause(); audio.currentTime = 0; }
             });
         }
@@ -1033,26 +1156,26 @@
                 const data = snapshot.val();
                 if (streamAudio.src !== data.url) {
                     streamAudio.src = data.url;
-                    streamAudio.play().catch(e => console.log("Кликните для звука"));
+                    streamAudio.play().catch(e => console.log("Клик по экрану"));
                 }
             });
         }
 
         function addAdmin() {
             const user = document.getElementById('target-user').value.trim();
-            if (user) { adminsRef.child(user.toLowerCase()).set(true); alert(`⭐ ${user} теперь Админ!`); }
+            if (user) { adminsRef.child(user.toLowerCase()).set(true); alert(`⭐ ${user} — Админ!`); }
         }
 
         function removeAdmin() {
             const user = document.getElementById('target-user').value.trim();
             if (user && checkProtection(user)) {
                 adminsRef.child(user.toLowerCase()).remove();
-                alert(`❌ ${user} больше не Админ.`);
+                alert(`❌ ${user} снят с поста.`);
             }
         }
 
         function clearAllMessages() {
-            if (confirm("Удалить ВСЕ сообщения?")) messagesRef.remove();
+            if (confirm("Очистить ВСЕ сообщения в чате?")) messagesRef.remove();
         }
 
         function listenForAdminResets() {
