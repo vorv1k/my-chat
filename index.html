@@ -29,6 +29,55 @@
             height: 100vh; overflow: hidden;
         }
 
+        /* ✈️ СТИЛИ ДЛЯ ВЫПЛЫВАЮЩЕЙ РЕКЛАМЫ АВИАСЕЙЛС */
+        .ad-banner-container {
+            position: fixed;
+            top: -120px; /* Спрятан за верхним краем экрана */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            height: 80px;
+            background: #0085fe;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .ad-banner-container.show {
+            top: 15px; /* Выезжает сверху */
+        }
+
+        .ad-banner-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ad-close-btn {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
         .glow-button {
             background: linear-gradient(45deg, var(--accent-secondary), var(--accent-primary));
             color: #000; border: none; border-radius: 20px;
@@ -126,7 +175,6 @@
 
         .admin-panel { display: flex; flex-direction: column; gap: 10px; text-align: left; }
 
-        /* 😱 Экран Скримера на весь экран */
         #screamer-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: #000; z-index: 99999; display: none;
@@ -139,12 +187,19 @@
 </head>
 <body>
 
+    <!-- ✈️ РЕКЛАМНЫЙ БАННЕР АВИАСЕЙЛС -->
+    <div class="ad-banner-container" id="aviasales-ad" onclick="openAviasales()">
+        <button class="ad-close-btn" onclick="closeAd(event)">✕</button>
+        <!-- Картинка Авиасейлс -->
+        <img class="ad-banner-img" src="https://i.postimg.cc/P5Lp7X3M/aviasales-banner.png" alt="Авиасейлс">
+    </div>
+
     <!-- Аудио элементы -->
     <audio id="abuse-audio" src="music.mp3"></audio>
     <audio id="stream-audio" autoplay></audio>
     <audio id="screamer-audio"></audio>
 
-    <!-- Окно Полноэкранного Скримера -->
+    <!-- Экран Скримера -->
     <div id="screamer-overlay">
         <img id="screamer-img" src="" alt="Screamer">
     </div>
@@ -166,7 +221,6 @@
             <h2>👑 Панель Администратора</h2>
             <div class="admin-panel" style="margin-top: 15px;">
                 <button class="btn-small" style="background: linear-gradient(45deg, #ff0055, #ff5000); padding: 10px; font-weight: bold;" onclick="toggleAbuseMusic()">💥 АДМИН АБЬЮЗ (Файл music.mp3)</button>
-
                 <button class="btn-small" style="background: linear-gradient(45deg, #8e2de2, #4a00e0); padding: 10px; font-weight: bold;" onclick="openScreamerMenu()">😱 ОТПРАВИТЬ СКРИМЕР</button>
                 
                 <hr style="border-color: var(--border-color); margin: 5px 0;">
@@ -197,12 +251,11 @@
         </div>
     </div>
 
-    <!-- 😱 ОКНО НАСТРОЙКИ СКРИМЕРА -->
+    <!-- 😱 Настройка Скримера -->
     <div class="modal-overlay" id="screamer-modal" style="display: none; z-index: 1001;">
         <div class="modal">
             <h2>😱 Настройка Скримера</h2>
             <div style="text-align: left; margin-top: 10px; font-size: 0.85rem;">
-                
                 <label style="color: var(--accent-primary); font-weight: bold;">1. Жертва (Никнейм или 'ALL'):</label>
                 <input type="text" id="screamer-target" placeholder="Введите ник или ALL для всех">
 
@@ -301,7 +354,31 @@
             } else {
                 initChat();
             }
+            startAdLoop(); // ✈️ Запуск таймера рекламы
         };
+
+        // --- ✈️ ЛОГИКА ВЫПЛЫВАЮЩЕЙ РЕКЛАМЫ ---
+        function startAdLoop() {
+            setInterval(() => {
+                const ad = document.getElementById('aviasales-ad');
+                ad.classList.add('show');
+
+                // Автоматически убирать баннер через 3 секунды
+                setTimeout(() => {
+                    ad.classList.remove('show');
+                }, 3000);
+
+            }, 5000); // Появляется каждые 5 секунд
+        }
+
+        function closeAd(event) {
+            event.stopPropagation(); // Чтобы не переходило по ссылке при клике на крестик
+            document.getElementById('aviasales-ad').classList.remove('show');
+        }
+
+        function openAviasales() {
+            window.open('https://www.aviasales.ru', '_blank');
+        }
 
         function checkNickLimit() {
             const now = Date.now();
@@ -565,7 +642,7 @@
             });
         }
 
-        // --- 😱 ИСПРАВЛЕННЫЙ СКРИМЕР ---
+        // --- 😱 СКРИМЕРЫ ---
         function openScreamerMenu() {
             const target = document.getElementById('target-user').value.trim();
             if (target) {
@@ -629,7 +706,6 @@
             const img = document.getElementById('screamer-img');
             const audio = document.getElementById('screamer-audio');
 
-            // Принудительно перезагружаем картинку (добавляем timestamp для обхода кэша)
             const cleanUrl = imgUrl.includes('?') ? imgUrl + '&t=' + Date.now() : imgUrl + '?t=' + Date.now();
             img.src = cleanUrl;
             
