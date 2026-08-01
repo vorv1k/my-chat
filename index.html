@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат с Админкой</title>
+    <title>Чат</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -25,53 +25,41 @@
         body {
             background-color: #050505;
             color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
         }
 
         .glow-button {
             background: linear-gradient(45deg, var(--accent-secondary), var(--accent-primary));
-            color: #000;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            padding: 10px 20px;
-            transition: all 0.3s ease;
-            box-shadow: var(--btn-glow);
+            color: #000; border: none; border-radius: 20px;
+            cursor: pointer; font-weight: bold; padding: 10px 20px;
+            transition: all 0.3s ease; box-shadow: var(--btn-glow);
         }
 
-        .glow-button:hover { transform: translateY(-2px); }
+        .glow-button:disabled {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none !important;
+        }
 
         .btn-small {
             background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 5px 10px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.8rem;
+            border: 1px solid var(--border-color); color: var(--text-main);
+            padding: 5px 10px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;
         }
 
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); display: flex;
+            justify-content: center; align-items: center; z-index: 1000;
             backdrop-filter: blur(8px);
         }
 
         .modal {
-            background: var(--bg-chat);
-            padding: 25px;
-            border-radius: 16px;
-            width: 340px;
-            border: 1px solid var(--border-color);
-            text-align: center;
+            background: var(--bg-chat); padding: 25px; border-radius: 16px;
+            width: 340px; border: 1px solid var(--border-color); text-align: center;
         }
 
         .modal input {
@@ -82,16 +70,13 @@
 
         .chat-container {
             width: 100%; max-width: 750px; height: 90vh;
-            background: var(--bg-chat);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            display: flex; flex-direction: column;
+            background: var(--bg-chat); backdrop-filter: blur(12px);
+            border-radius: 20px; display: flex; flex-direction: column;
             border: 1px solid var(--border-color);
         }
 
         .chat-header {
-            padding: 15px 20px;
-            background: rgba(15, 15, 20, 0.7);
+            padding: 15px 20px; background: rgba(15, 15, 20, 0.7);
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--border-color);
         }
@@ -116,8 +101,7 @@
 
         .chat-input-area {
             padding: 15px; background: rgba(15, 15, 20, 0.8);
-            border-top: 1px solid var(--border-color);
-            display: flex; gap: 10px;
+            border-top: 1px solid var(--border-color); display: flex; gap: 10px;
         }
 
         .chat-input-area input {
@@ -126,32 +110,36 @@
         }
 
         .admin-panel { display: flex; flex-direction: column; gap: 10px; text-align: left; }
-        .admin-panel button { margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <!-- Вход / Смена ника -->
+    <!-- Аудио плеер для админ-абьюз песни -->
+    <audio id="abuse-audio" src="music.mp3"></audio>
+
+    <!-- Вход / Ввод ника -->
     <div class="modal-overlay" id="nickname-modal" style="display: none;">
         <div class="modal">
-            <h2 id="modal-title">Введите ник</h2>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Сменить ник можно только 1 раз в неделю!</p>
+            <h2>Введите ник</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Смена ника доступна 1 раз в 7 дней</p>
             <input type="text" id="nickname-input" placeholder="Никнейм..." maxlength="15">
-            <div id="modal-error" style="color: #ff4d4d; font-size: 0.8rem; display:none;"></div>
-            <button class="glow-button" style="width:100%; margin-top: 10px;" onclick="saveUsername()">Сохранить</button>
+            <div id="modal-error" style="color: #ff4d4d; font-size: 0.8rem; display:none; margin-bottom: 5px;"></div>
+            <button class="glow-button" style="width:100%; margin-top: 10px;" onclick="saveUsername()">Войти</button>
         </div>
     </div>
 
-    <!-- Админ Панель Модалка -->
+    <!-- Админ Панель -->
     <div class="modal-overlay" id="admin-modal" style="display: none;">
         <div class="modal">
-            <h2>👑 Панель Управления</h2>
+            <h2>👑 Панель Администратора</h2>
             <div class="admin-panel" style="margin-top: 15px;">
-                <input type="text" id="target-user" placeholder="Имя пользователя...">
+                <button class="btn-small" style="background: linear-gradient(45deg, #ff0055, #ff5000); padding: 10px; font-weight: bold;" onclick="toggleAbuseMusic()">💥 АДМИН АБЬЮЗ (Музыка)</button>
+                <hr style="border-color: var(--border-color); margin: 5px 0;">
+                <input type="text" id="target-user" placeholder="Ник пользователя...">
                 <button class="btn-small" style="background:#ff4d4d;" onclick="banUser()">🚫 Забанить</button>
                 <button class="btn-small" style="background:#4caf50;" onclick="unbanUser()">🔓 Разбанить</button>
                 <button class="btn-small" style="background:#2196f3;" onclick="allowNickChange()">🔄 Сбросить кулдаун ника</button>
-                <hr style="border-color: var(--border-color); margin: 10px 0;">
+                <hr style="border-color: var(--border-color); margin: 5px 0;">
                 <button class="btn-small" style="background:#e91e63; width:100%;" onclick="clearAllMessages()">🗑️ Очистить весь чат</button>
             </div>
             <button class="btn-small" style="width:100%; margin-top: 15px;" onclick="closeAdmin()">Закрыть</button>
@@ -167,7 +155,7 @@
                 <button class="btn-small" onclick="promptChangeNick()" style="margin-left: 5px;">✏️</button>
             </div>
             <div>
-                <button class="btn-small" onclick="openAdmin()">👑 Админка</button>
+                <button class="btn-small" id="admin-btn" style="display: none; background: linear-gradient(45deg, #ff007f, #7928ca);" onclick="openAdmin()">👑 Админка</button>
             </div>
         </div>
 
@@ -175,12 +163,11 @@
 
         <div class="chat-input-area">
             <input type="text" id="message-input" placeholder="Напишите сообщение..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button class="glow-button" onclick="sendMessage()">Отправить</button>
+            <button class="glow-button" id="send-btn" onclick="sendMessage()">Отправить</button>
         </div>
     </div>
 
     <script>
-        // Конфигурация Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDxcjoPs5nfVrCyXs21EJZXscQ51txvAGU",
             authDomain: "chat-app-7530d.firebaseapp.com",
@@ -196,14 +183,15 @@
         const messagesRef = database.ref('messages');
         const bansRef = database.ref('bans');
         const resetNickRef = database.ref('resetNickRequests');
+        const usersRef = database.ref('users');
+        const musicRef = database.ref('admin_music'); // Ссылка на включение музыки для всех
 
-        // 🔑 ТВОЙ ПАРОЛЬ АДМИНИСТРАТОРА (Можешь изменить на свой!)
-        const ADMIN_PASSWORD = "1234";
+        const ADMIN_NICKNAME = "Anton"; 
 
         let currentUser = localStorage.getItem('chat_username') || "";
         let lastNickChange = localStorage.getItem('chat_last_nick_change') || 0;
+        let isCooldown = false;
 
-        // Проверка при запуске
         window.onload = function() {
             if (!currentUser) {
                 document.getElementById('nickname-modal').style.display = 'flex';
@@ -212,17 +200,30 @@
             }
         };
 
-        function saveUsername() {
+        async function saveUsername() {
             const input = document.getElementById('nickname-input');
             const name = input.value.trim();
 
             if (name.length < 3 || name.length > 15) {
-                showError("Ник должен быть от 3 до 15 символов!");
+                showError("Ник от 3 до 15 символов!");
                 return;
+            }
+
+            const userCheck = await usersRef.child(name.toLowerCase()).once('value');
+            if (userCheck.exists() && userCheck.val() !== currentUser) {
+                showError("⚠️ Этот ник уже занят!");
+                return;
+            }
+
+            if (currentUser && currentUser !== name) {
+                usersRef.child(currentUser.toLowerCase()).remove();
             }
 
             currentUser = name;
             lastNickChange = Date.now();
+
+            usersRef.child(currentUser.toLowerCase()).set(true);
+
             localStorage.setItem('chat_username', currentUser);
             localStorage.setItem('chat_last_nick_change', lastNickChange);
 
@@ -232,12 +233,11 @@
 
         function promptChangeNick() {
             const now = Date.now();
-            const ONE_WEEK = 7 * 24 * 60 * 60 * 1000; // 7 дней в миллисекундах
+            const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
 
-            // Проверка: прошло ли 7 дней с последней смены
             if (now - lastNickChange < ONE_WEEK) {
                 const daysLeft = Math.ceil((ONE_WEEK - (now - lastNickChange)) / (1000 * 60 * 60 * 24));
-                alert(`Сменить ник можно только 1 раз в неделю! Осталось ждать: ${daysLeft} дн.`);
+                alert(`Сменить ник можно 1 раз в неделю! Осталось ждать: ${daysLeft} дн.`);
                 return;
             }
 
@@ -246,8 +246,16 @@
 
         function initChat() {
             document.getElementById('user-display').innerText = `@${currentUser}`;
+            
+            if (currentUser.toLowerCase() === ADMIN_NICKNAME.toLowerCase()) {
+                document.getElementById('admin-btn').style.display = 'inline-block';
+            } else {
+                document.getElementById('admin-btn').style.display = 'none';
+            }
+
             listenForMessages();
             listenForAdminResets();
+            listenForMusic(); // Слушаем команду на включение музыки
         }
 
         function showError(msg) {
@@ -256,16 +264,16 @@
             err.style.display = 'block';
         }
 
-        // Отправка сообщений
         async function sendMessage() {
+            if (isCooldown) return;
+
             const input = document.getElementById('message-input');
             const text = input.value.trim();
             if (!text) return;
 
-            // Проверка на Бан
             const banSnapshot = await bansRef.child(currentUser).once('value');
             if (banSnapshot.exists() && banSnapshot.val() === true) {
-                alert("❌ Вы забанены администратором и не можете отправлять сообщения!");
+                alert("❌ Вы забанены администратором!");
                 return;
             }
 
@@ -276,6 +284,28 @@
             });
 
             input.value = '';
+            startCooldown(3);
+        }
+
+        function startCooldown(seconds) {
+            isCooldown = true;
+            const btn = document.getElementById('send-btn');
+            btn.disabled = true;
+
+            let timeLeft = seconds;
+            btn.innerText = `${timeLeft}s`;
+
+            const interval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    btn.innerText = `${timeLeft}s`;
+                } else {
+                    clearInterval(interval);
+                    btn.disabled = false;
+                    btn.innerText = 'Отправить';
+                    isCooldown = false;
+                }
+            }, 1000);
         }
 
         function listenForMessages() {
@@ -298,18 +328,34 @@
             container.appendChild(div);
         }
 
-        // --- 👑 АДМИН ПАНЕЛЬ ---
+        // --- 👑 АДМИН ПАНЕЛЬ И МУЗЫКА ---
         function openAdmin() {
-            const pass = prompt("Введите секретный пароль админа:");
-            if (pass === ADMIN_PASSWORD) {
-                document.getElementById('admin-modal').style.display = 'flex';
-            } else if (pass !== null) {
-                alert("Неверный пароль!");
-            }
+            document.getElementById('admin-modal').style.display = 'flex';
         }
 
         function closeAdmin() {
             document.getElementById('admin-modal').style.display = 'none';
+        }
+
+        // Переключение музыки для ВСЕХ
+        async function toggleAbuseMusic() {
+            const snap = await musicRef.once('value');
+            const isPlaying = snap.val();
+            musicRef.set(!isPlaying); // Меняем состояние (вкл/выкл)
+        }
+
+        // Функция прослушивания музыки от админа
+        function listenForMusic() {
+            const audio = document.getElementById('abuse-audio');
+            musicRef.on('value', (snapshot) => {
+                const shouldPlay = snapshot.val();
+                if (shouldPlay) {
+                    audio.play().catch(e => console.log("Кликните на страницу для автовоспроизведения"));
+                } else {
+                    audio.pause();
+                    audio.currentTime = 0; // Сброс в начало
+                }
+            });
         }
 
         function banUser() {
@@ -337,18 +383,17 @@
         }
 
         function clearAllMessages() {
-            if (confirm("Вы уверены, что хотите удалить ВСЕ сообщения в чате?")) {
+            if (confirm("Удалить ВСЕ сообщения в чате?")) {
                 messagesRef.remove();
             }
         }
 
-        // Прослушка сигналов от админа на сброс кулдауна
         function listenForAdminResets() {
             resetNickRef.child(currentUser).on('value', (snapshot) => {
                 if (snapshot.exists()) {
                     localStorage.setItem('chat_last_nick_change', 0);
                     lastNickChange = 0;
-                    alert("🎉 Администратор разрешил вам сменить ник прямо сейчас!");
+                    alert("🎉 Админ разрешил вам сменить ник прямо сейчас!");
                     resetNickRef.child(currentUser).remove();
                 }
             });
