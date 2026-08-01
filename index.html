@@ -121,7 +121,7 @@
     <div class="modal-overlay" id="nickname-modal" style="display: none;">
         <div class="modal">
             <h2>Введите ник</h2>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Смена ника доступна 1 раз в 7 дней</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">Лимит смены ника: 3 раза в день</p>
             <input type="text" id="nickname-input" placeholder="Никнейм..." maxlength="15">
             <div id="modal-error" style="color: #ff4d4d; font-size: 0.8rem; display:none; margin-bottom: 5px;"></div>
             <button class="glow-button" style="width:100%; margin-top: 10px;" onclick="saveUsername()">Войти</button>
@@ -138,7 +138,7 @@
                 <input type="text" id="target-user" placeholder="Ник пользователя...">
                 <button class="btn-small" style="background:#ff4d4d;" onclick="banUser()">🚫 Забанить</button>
                 <button class="btn-small" style="background:#4caf50;" onclick="unbanUser()">🔓 Разбанить</button>
-                <button class="btn-small" style="background:#2196f3;" onclick="allowNickChange()">🔄 Сбросить кулдаун ника</button>
+                <button class="btn-small" style="background:#2196f3;" onclick="allowNickChange()">🔄 Сбросить лимит ников человеку</button>
                 <hr style="border-color: var(--border-color); margin: 5px 0;">
                 <button class="btn-small" style="background:#e91e63; width:100%;" onclick="clearAllMessages()">🗑️ Очистить весь чат</button>
             </div>
@@ -184,13 +184,15 @@
         const bansRef = database.ref('bans');
         const resetNickRef = database.ref('resetNickRequests');
         const usersRef = database.ref('users');
-        const musicRef = database.ref('admin_music'); // Ссылка на включение музыки для всех
+        const musicRef = database.ref('admin_music');
 
         const ADMIN_NICKNAME = "Anton"; 
 
         let currentUser = localStorage.getItem('chat_username') || "";
-        let lastNickChange = localStorage.getItem('chat_last_nick_change') || 0;
         let isCooldown = false;
+
+        // Данные о попытках смены ника (сохраняются в браузер)
+        let nickHistory = JSON.parse(localStorage.getItem('chat_nick_history') || "[]");
 
         window.onload = function() {
             if (!currentUser) {
@@ -199,6 +201,17 @@
                 initChat();
             }
         };
+
+        // Функция проверки лимита (3 раза в 24 часа)
+        function checkNickLimit() {
+            const now = Date.now();
+            const ONE_DAY = 24 * 60 * 60 * 1000;
+            // Оставляем только попытки за последние 24 часа
+            nickHistory = nickHistory.filter(time => now - time < ONE_DAY);
+            localStorage.setItem('chat_nick_history', JSON.stringify(nickHistory));
+
+            return nickHistory.length < 3;
+        }
 
         async function saveUsername() {
             const input = document.getElementById('nickname-input');
@@ -209,38 +222,39 @@
                 return;
             }
 
+            // Если проверяем смену существующего ника на новый
+            if (currentUser && currentUser !== name && !checkNickLimit()) {
+                showError("⚠️ Достигнут лимит: сменить ник можно только 3 раза в день!");
+                return;
+            }
+
             const userCheck = await usersRef.child(name.toLowerCase()).once('value');
             if (userCheck.exists() && userCheck.val() !== currentUser) {
                 showError("⚠️ Этот ник уже занят!");
                 return;
             }
 
+            // Если сменяется существующий ник — освобождаем его
             if (currentUser && currentUser !== name) {
                 usersRef.child(currentUser.toLowerCase()).remove();
+                nickHistory.push(Date.now());
+                localStorage.setItem('chat_nick_history', JSON.stringify(nickHistory));
             }
 
             currentUser = name;
-            lastNickChange = Date.now();
-
             usersRef.child(currentUser.toLowerCase()).set(true);
-
             localStorage.setItem('chat_username', currentUser);
-            localStorage.setItem('chat_last_nick_change', lastNickChange);
 
             document.getElementById('nickname-modal').style.display = 'none';
             initChat();
         }
 
         function promptChangeNick() {
-            const now = Date.now();
-            const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-
-            if (now - lastNickChange < ONE_WEEK) {
-                const daysLeft = Math.ceil((ONE_WEEK - (now - lastNickChange)) / (1000 * 60 * 60 * 24));
-                alert(`Сменить ник можно 1 раз в неделю! Осталось ждать: ${daysLeft} дн.`);
+            if (!checkNickLimit()) {
+                alert("❌ Вы использовали все 3 попытки смены ника за день! Попробуйте позже.");
                 return;
             }
-
+            document.getElementById('nickname-input').value = currentUser;
             document.getElementById('nickname-modal').style.display = 'flex';
         }
 
@@ -255,7 +269,7 @@
 
             listenForMessages();
             listenForAdminResets();
-            listenForMusic(); // Слушаем команду на включение музыки
+            listenForMusic();
         }
 
         function showError(msg) {
@@ -337,23 +351,21 @@
             document.getElementById('admin-modal').style.display = 'none';
         }
 
-        // Переключение музыки для ВСЕХ
         async function toggleAbuseMusic() {
             const snap = await musicRef.once('value');
             const isPlaying = snap.val();
-            musicRef.set(!isPlaying); // Меняем состояние (вкл/выкл)
+            musicRef.set(!isPlaying);
         }
 
-        // Функция прослушивания музыки от админа
         function listenForMusic() {
             const audio = document.getElementById('abuse-audio');
             musicRef.on('value', (snapshot) => {
                 const shouldPlay = snapshot.val();
                 if (shouldPlay) {
-                    audio.play().catch(e => console.log("Кликните на страницу для автовоспроизведения"));
+                    audio.play().catch(e => console.log("Кликните на страницу для проигрывания музыки"));
                 } else {
                     audio.pause();
-                    audio.currentTime = 0; // Сброс в начало
+                    audio.currentTime = 0;
                 }
             });
         }
@@ -378,7 +390,7 @@
             const user = document.getElementById('target-user').value.trim();
             if (user) {
                 resetNickRef.child(user).set(Date.now());
-                alert(`Кулдаун ника для ${user} сброшен!`);
+                alert(`Лимит попыток ника для ${user} сброшен!`);
             }
         }
 
@@ -391,9 +403,9 @@
         function listenForAdminResets() {
             resetNickRef.child(currentUser).on('value', (snapshot) => {
                 if (snapshot.exists()) {
-                    localStorage.setItem('chat_last_nick_change', 0);
-                    lastNickChange = 0;
-                    alert("🎉 Админ разрешил вам сменить ник прямо сейчас!");
+                    localStorage.setItem('chat_nick_history', "[]");
+                    nickHistory = [];
+                    alert("🎉 Админ сбросил ваш дневной лимит смены ника!");
                     resetNickRef.child(currentUser).remove();
                 }
             });
