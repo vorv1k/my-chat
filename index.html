@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат</title>
+    <style>
+        :root {
+            --bg-chat: rgba(22, 22, 26, 0.85); /* Полупрозрачный для эффекта стекла */
+            --bg-input: rgba(45, 45, 52, 0.9);
+            --text-main: #f0f0f0;
+            --text-muted: #aaaaaa;
+            
+            --accent-primary: #00f2fe;
+            --accent-secondary: #4facfe;
+            
+            --btn-glow: 0 0 15px rgba(0, 242, 254, 0.6), 0 0 5px rgba(79, 172, 254, 0.4);
+            --btn-glow-hover: 0 0 25px rgba(0, 242, 254, 0.9), 0 0 10px rgba(79, 172, 254, 0.6);
+            
+            --border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            /* Задний фон по умолчанию — гифка с черной дырой */
+            background-color: #050505;
+            background-image: id_bg_placeholder;
+            background-repeat: repeat;
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        /* Сияющие кнопки */
+        .glow-button {
+            background: linear-gradient(45deg, var(--accent-secondary), var(--accent-primary));
+            color: #000;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: var(--btn-glow);
+            outline: none;
+        }
+
+        .glow-button:hover {
+            box-shadow: var(--btn-glow-hover);
+            transform: translateY(-2px);
+        }
+
+        .glow-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        /* Кнопка смены фона */
+        .bg-change-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .bg-change-btn:hover {
+            background: rgba(0, 242, 254, 0.2);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal {
+            background: var(--bg-chat);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            width: 340px;
+            border: 1px solid var(--border-color);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .modal h2 { 
+            margin-bottom: 10px; 
+            color: var(--text-main);
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+        }
+        
+        .modal p { color: var(--text-muted); margin-bottom: 15px; font-size: 0.85rem; }
+
+        .modal input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-input);
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .modal input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 8px rgba(0, 242, 254, 0.4);
+        }
+
+        .error-msg {
+            color: #ff4d4d;
+            font-size: 0.75rem;
+            margin-bottom: 15px;
+            display: none;
+            text-align: left;
+        }
+
+        .modal button {
+            width: 100%;
+            padding: 12px;
+        }
+
+        /* Контейнер чата со стеклянным эффектом */
+        .chat-container {
+            width: 100%;
+            max-width: 750px;
+            height: 90vh;
+            background: var(--bg-chat);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .chat-header {
+            background: rgba(15, 15, 20, 0.7);
+            color: var(--text-main);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .chat-header span:first-child {
+            color: var(--accent-primary);
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+
+        /* Анимация всплытия сообщений */
+        @keyframes popIn {
+            0% { opacity: 0; transform: translateY(15px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            background: var(--bg-input);
+            color: var(--text-main);
+            align-self: flex-start;
+            word-wrap: break-word;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .message.my-message {
+            background: linear-gradient(135deg, rgba(45,45,55,0.9) 0%, rgba(20,25,35,0.9) 100%);
+            align-self: flex-end;
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.15);
+        }
+
+        .message .username {
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: var(--accent-primary);
+        }
+        
+        .message.my-message .username {
+            color: var(--accent-secondary);
+        }
+
+        .message img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 8px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+        }
+
+        .message img:hover {
+            transform: scale(1.02);
+        }
+
+        .message a {
+            color: var(--accent-primary);
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        /* Панель ввода */
+        .chat-input-area {
+            padding: 15px 20px;
+            background: rgba(15, 15, 20, 0.8);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .emoji-bar {
+            display: flex;
+            gap: 10px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .emoji-bar span { transition: transform 0.2s; }
+        .emoji-bar span:hover { transform: scale(1.3); }
+
+        .input-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-input-area input[type="text"] {
+            width: 100%;
+            padding: 12px 65px 12px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            outline: none;
+            background-color: var(--bg-input);
+            color: var(--text-main);
+            transition: border-color 0.3s;
+        }
+        
+        .chat-input-area input[type="text"]:focus {
+            border-color: var(--accent-secondary);
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.3);
+        }
+
+        .char-counter {
+            position: absolute;
+            right: 15px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .file-label {
+            cursor: pointer;
+            font-size: 1.4rem;
+            color: var(--text-muted);
+            transition: all 0.3s;
+        }
+        
+        .file-label:hover { 
+            color: var(--accent-primary); 
+            transform: scale(1.15);
+        }
+
+        #file-input, #bg-file-input { display: none; }
+
+        /* Анимированный превью прикрепляемого файла */
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 5px rgba(0, 242, 254, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(0, 242, 254, 0.7); }
+            100% { box-shadow: 0 0 5px rgba(0, 242, 254, 0.3); }
+        }
+
+        .file-preview {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 242, 254, 0.1);
+            border: 1px solid var(--accent-primary);
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            animation: pulseGlow 2s infinite, fadeIn 0.3s ease;
+        }
+
+        .file-preview .remove-file {
+            cursor: pointer;
+            color: #ff4d4d;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .send-btn { padding: 10px 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- Окно выбора ника -->
+    <div class="modal-overlay" id="nickname-modal">
+        <div class="modal">
+            <h2>Введите ник</h2>
+            <p>Русские и английские буквы (3-15 символов), без мата:</p>
+            <input type="text" id="nickname-input" placeholder="Никнейм..." maxlength="15">
+            <div class="error-msg" id="modal-error">Некорректный ник!</div>
+            <button class="glow-button" onclick="setUsername()">Войти</button>
+        </div>
+    </div>
+
+    <!-- Основной чат -->
+    <div class="chat-container">
+        <div class="chat-header">
+            <span>💬 ЧАТ</span>
+            <div class="header-actions">
+                <button class="bg-change-btn" onclick="document.getElementById('bg-file-input').click()" title="Сменить гифку/картинку фона">🖼️ Фон</button>
+                <input type="file" id="bg-file-input" accept="image/*" onchange="changeBackground(event)">
+                <span id="user-display" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages"></div>
+
+        <div class="chat-input-area">
+            <!-- Превью выбранного файла -->
+            <div class="file-preview" id="file-preview">
+                <span id="file-preview-name">📎 Файл прикреплен</span>
+                <span class="remove-file" onclick="removeSelectedFile()">✖</span>
+            </div>
+
+            <div class="emoji-bar">
+                <span onclick="addEmoji('😎')">😎</span>
+                <span onclick="addEmoji('😈')">😈</span>
+                <span onclick="addEmoji('✨')">✨</span>
+                <span onclick="addEmoji('🎧')">🎧</span>
+                <span onclick="addEmoji('🎮')">🎮</span>
+                <span onclick="addEmoji('🚀')">🚀</span>
+                <span onclick="addEmoji('🔥')">🔥</span>
+            </div>
+
+            <div class="controls-row">
+                <label for="file-input" class="file-label" title="Прикрепить файл">📎</label>
+                <input type="file" id="file-input" onchange="handleFileSelect(event)">
+
+                <div class="input-wrapper">
+                    <input type="text" id="message-input" placeholder="Напишите сообщение..." maxlength="1000" oninput="updateCounter()" onkeypress="handleKeyPress(event)">
+                    <span class="char-counter" id="char-counter">0/1000</span>
+                </div>
+                
+                <button class="send-btn glow-button" onclick="sendMessage()">Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = "";
+
+        // Расширенный список запрещенных матерных слов (RU / EN)
+        const badWords = [
+            // Русские слова и корни
+            "хуй", "хули", "хуя", "блят", "бляд", "сука", "суч", "ебат", "ебан", "ебол", "пизд", "пидор", "гандон", "мудак", "пипец", "чмо",
+            // Английские слова
+            "fuck", "bitch", "shit", "asshole", "bastard", "dick", "cunt", "crap", "slut", "whore"
+        ];
+
+        // Функционал смены фона пользователя
+        function changeBackground(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.body.style.backgroundImage = `url('${e.target.result}')`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Фильтрация текста на мат
+        function filterBadWords(text) {
+            let filteredText = text;
+            badWords.forEach(word => {
+                const regex = new RegExp(word, 'gi');
+                filteredText = filteredText.replace(regex, '***');
+            });
+            return filteredText;
+        }
+
+        function setUsername() {
+            const input = document.getElementById('nickname-input');
+            const name = input.value.trim();
+
+            // Разрешены Русские (а-яА-Я, ёЁ), Английские (a-zA-Z), Цифры и знак подчёркивания
+            const validLettersPattern = /^[a-zA-Z0-9а-яА-ЯёЁ_]+$/;
+
+            if (name.length < 3 || name.length > 15) {
+                showError("Длина ника должна быть от 3 до 15 символов!");
+                return;
+            }
+
+            if (!validLettersPattern.test(name)) {
+                showError("Используйте только русские или английские буквы и цифры!");
+                return;
+            }
+
+            // Проверка ника на мат
+            const lowerName = name.toLowerCase();
+            const hasBadWord = badWords.some(word => lowerName.includes(word));
+
+            if (hasBadWord) {
+                showError("Запрещено использовать матерные слова в нике!");
+                return;
+            }
+
+            currentUser = name;
+            document.getElementById('nickname-modal').style.display = 'none';
+            document.getElementById('user-display').innerText = `Online: ${currentUser}`;
+            addSystemMessage(`системное: ${currentUser} вошел в чат.`);
+        }
+
+        function showError(msg) {
+            const errorDiv = document.getElementById('modal-error');
+            errorDiv.innerText = msg;
+            errorDiv.style.display = 'block';
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('file-preview');
+            const previewName = document.getElementById('file-preview-name');
+
+            if (file) {
+                previewName.innerText = `📎 Готов к отправке: ${file.name}`;
+                preview.style.display = 'flex';
+            }
+        }
+
+        function removeSelectedFile() {
+            document.getElementById('file-input').value = '';
+            document.getElementById('file-preview').style.display = 'none';
+        }
+
+        function updateCounter() {
+            const input = document.getElementById('message-input');
+            const counter = document.getElementById('char-counter');
+            counter.innerText = `${input.value.length}/1000`;
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') { sendMessage(); }
+        }
+
+        function addEmoji(emoji) {
+            const input = document.getElementById('message-input');
+            if (input.value.length + emoji.length <= 1000) {
+                input.value += emoji;
+                updateCounter();
+            }
+            input.focus();
+        }
+
+        function sendMessage() {
+            const textInput = document.getElementById('message-input');
+            const fileInput = document.getElementById('file-input');
+            let text = textInput.value.trim();
+            const file = fileInput.files[0];
+
+            if (!text && !file) return;
+
+            // Фильтруем текст на мат перед отправкой
+            text = filterBadWords(text);
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const fileUrl = e.target.result;
+                    const isImage = file.type.startsWith('image/');
+                    renderMessage(currentUser, text, fileUrl, isImage, file.name, true);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                renderMessage(currentUser, text, null, false, null, true);
+            }
+
+            textInput.value = '';
+            removeSelectedFile();
+            updateCounter();
+        }
+
+        function renderMessage(user, text, fileUrl, isImage, fileName, isMyMessage) {
+            const messagesContainer = document.getElementById('chat-messages');
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message');
+            if (isMyMessage) msgDiv.classList.add('my-message');
+
+            let content = `<div class="username">${user}</div>`;
+            
+            if (text) {
+                content += `<div>${text}</div>`;
+            }
+
+            if (fileUrl) {
+                if (isImage) {
+                    content += `<img src="${fileUrl}" alt="Изображение">`;
+                } else {
+                    content += `<div style="margin-top: 8px;"><a href="${fileUrl}" download="${fileName}">💾 Скачать файл: ${fileName}</a></div>`;
+                }
+            }
+
+            msgDiv.innerHTML = content;
+            messagesContainer.appendChild(msgDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addSystemMessage(text) {
+            const messagesContainer = document.getElementById('chat-messages');
+            const sysDiv = document.createElement('div');
+            sysDiv.style.textAlign = 'center';
+            sysDiv.style.fontSize = '0.8rem';
+            sysDiv.style.color = 'rgba(255,255,255,0.4)';
+            sysDiv.style.margin = '8px 0';
+            sysDiv.style.fontStyle = 'italic';
+            sysDiv.innerText = text;
+            messagesContainer.appendChild(sysDiv);
+        }
+    </script>
+</body>
+</html>
