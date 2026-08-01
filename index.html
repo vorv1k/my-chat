@@ -29,55 +29,59 @@
             height: 100vh; overflow: hidden;
         }
 
-        /* ✈️ АККУРАТНЫЙ БАННЕР РЕКЛАМЫ (НЕ МЕШАЕТ ЧАТУ) */
+        /* ✈️ БАННЕР: ПОЯВЛЯЕТСЯ СЛЕВА И СТРЕМИТСЯ К ТОЧНОМУ РАЗМЕРУ КАРТИНКИ */
         .ad-banner-container {
             position: fixed;
-            top: -100px; /* Спрятан за верхним краем */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 400px; /* Компактная ширина */
-            height: 60px;     /* Компактная высота */
-            background: #0085fe;
+            top: 20px;
+            left: -350px; /* Спрятан за левым краем */
+            width: 280px;  /* Компактный и пропорциональный размер */
+            aspect-ratio: 2 / 1; /* Пропорция оригинала (2:1) */
             border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
             z-index: 9999;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            transition: top 0.4s ease-in-out;
+            transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
         }
 
+        /* Выезжает и остаётся слева */
         .ad-banner-container.show {
-            top: 10px; /* Выезжает в самую верхнюю часть */
+            left: 20px; 
         }
 
         .ad-banner-img {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Картинка идеально вписывается по размеру */
-            background-color: #0085fe;
+            object-fit: cover; /* Картинка полностью и ровно забивает блок без полей */
+            display: block;
         }
 
         .ad-close-btn {
             position: absolute;
-            top: 4px;
+            top: 6px;
             right: 6px;
             background: rgba(0, 0, 0, 0.6);
             color: #fff;
             border: none;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             font-size: 11px;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 10000;
+            transition: background 0.2s;
+        }
+
+        .ad-close-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
         }
 
         .glow-button {
@@ -180,7 +184,7 @@
 </head>
 <body>
 
-    <!-- ✈️ РЕКЛАМНЫЙ БАННЕР -->
+    <!-- ✈️ РЕКЛАМНЫЙ БАННЕР (ПОЯВЛЯЕТСЯ СЛЕВА И ОСТАЕТСЯ) -->
     <div class="ad-banner-container" id="aviasales-ad" onclick="openAviasales()">
         <button class="ad-close-btn" onclick="closeAd(event)">✕</button>
         <img class="ad-banner-img" src="./aviasales.png" alt="Авиасейлс">
@@ -307,21 +311,15 @@
             } else {
                 initChat();
             }
-            startAdLoop(); // Запуск бесконечной рекламы
+            showAdOnce(); // Показываем 1 раз
         };
 
-        // --- ✈️ БЕСКОНЕЧНАЯ И НЕ МЕШАЮЩАЯ РЕКЛАМА ---
-        function startAdLoop() {
-            setInterval(() => {
+        // --- ✈️ ОДНОКРАТНЫЙ ВЫЕЗД РЕКЛАМЫ СЛЕВА ---
+        function showAdOnce() {
+            setTimeout(() => {
                 const ad = document.getElementById('aviasales-ad');
-                ad.classList.add('show');
-
-                // Повисеть 3 секунды и спрятаться
-                setTimeout(() => {
-                    ad.classList.remove('show');
-                }, 3000);
-
-            }, 5000); // Каждые 5 секунд
+                ad.classList.add('show'); // Выезжает слева и остается навсегда
+            }, 1500);
         }
 
         function closeAd(event) {
@@ -544,11 +542,10 @@
             document.getElementById('admin-modal').style.display = 'none';
         }
 
-        // 🔊 СИНХРОННЫЙ АДМИН АБЬЮЗ (Музыка для всех через Firebase)
         async function toggleAbuseMusic() {
             const snap = await musicRef.once('value');
             const isPlaying = snap.val();
-            musicRef.set(!isPlaying); // Переключает статус на сервере
+            musicRef.set(!isPlaying);
         }
 
         function listenForMusic() {
@@ -556,7 +553,7 @@
             musicRef.on('value', (snapshot) => {
                 const shouldPlay = snapshot.val();
                 if (shouldPlay) {
-                    audio.play().catch(e => console.log("Нажмите на страницу для воспроизведения звука"));
+                    audio.play().catch(e => console.log("Нажмите на страницу для звука"));
                 } else {
                     audio.pause();
                     audio.currentTime = 0;
