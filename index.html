@@ -112,6 +112,21 @@
         }
         .btn-nitro:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 0, 127, 0.8); }
 
+        .btn-apply {
+            background: linear-gradient(45deg, #00c853, #00e676);
+            color: #000; border: none; border-radius: 14px; cursor: pointer;
+            font-weight: bold; padding: 12px 20px; font-size: 0.95rem;
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.5); transition: all 0.3s ease;
+            width: 100%; margin-top: 15px; display: none;
+            animation: pulseBtn 1.5s infinite alternate;
+        }
+        .btn-apply:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(0, 230, 118, 0.8); }
+
+        @keyframes pulseBtn {
+            from { box-shadow: 0 0 10px rgba(0, 230, 118, 0.4); }
+            to { box-shadow: 0 0 22px rgba(0, 230, 118, 0.9); }
+        }
+
         .btn-small {
             background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border-color);
             color: var(--text-main); padding: 6px 12px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;
@@ -341,7 +356,7 @@
             <h2>⚙️ Настройки Профиля</h2>
             
             <div id="profile-draft-warning" class="draft-notice">
-                ⚠️ У вас есть несохраненные изменения! Нажмите <b>Сохранить</b>, чтобы они появились у остальных.
+                ⚠️ У вас есть несохраненные изменения! Нажмите <b>Применить</b> ниже.
             </div>
 
             <div style="margin-top: 15px;">
@@ -390,8 +405,6 @@
                         <option value="frame-gold">👑 Золотой блеск</option>
                     </select>
 
-                    <button class="btn-small" style="background: linear-gradient(45deg, #ff007f, #7928ca); width:100%; margin-top:5px; margin-bottom:10px; font-weight:bold;" onclick="saveNitroStyle()">💾 Сохранить стили Nitro</button>
-
                     <label style="font-size: 0.75rem; color: var(--text-muted); display: block;">Аватарка (До 1 МБ):</label>
                     <input type="file" accept="image/*" onchange="uploadAvatar(event)">
 
@@ -403,6 +416,10 @@
                     🔒 Изменение шрифта, рамок, цвета ника, баннера и описания доступно только владельцам <b style="color:#ff007f;">Nitro</b>.
                 </div>
             </div>
+
+            <!-- ✨ КНОПКА ПРИМЕНИТЬ (Появляется только при изменении) -->
+            <button class="btn-apply" id="apply-changes-btn" onclick="saveNitroStyle()">✨ Применить изменения</button>
+            
             <button class="btn-small" style="width:100%; margin-top: 15px;" onclick="closeProfile()">Закрыть</button>
         </div>
     </div>
@@ -691,6 +708,7 @@
         function openProfile() {
             hasUnsavedProfileChanges = false;
             document.getElementById('profile-draft-warning').style.display = 'none';
+            document.getElementById('apply-changes-btn').style.display = 'none';
             renderUserProfilePreview();
             document.getElementById('profile-modal').style.display = 'flex';
         }
@@ -710,9 +728,11 @@
             picker.style.display = val === 'custom' ? 'block' : 'none';
         }
 
+        /* ✨ Функция обновления превью и появления кнопки «Применить» */
         function updateLivePreview() {
             hasUnsavedProfileChanges = true;
             document.getElementById('profile-draft-warning').style.display = 'block';
+            document.getElementById('apply-changes-btn').style.display = 'block';
 
             const bioVal = document.getElementById('my-bio-input').value.trim();
             const fontVal = document.getElementById('my-font-input').value;
@@ -782,6 +802,7 @@
             }
         }
 
+        /* 💾 Функция применения изменений */
         function saveNitroStyle() {
             if (!isNitroUser) { alert("Только для Nitro!"); return; }
             
@@ -800,7 +821,8 @@
             }).then(() => {
                 hasUnsavedProfileChanges = false;
                 document.getElementById('profile-draft-warning').style.display = 'none';
-                alert("✨ Украшения профиля успешно сохранены!");
+                document.getElementById('apply-changes-btn').style.display = 'none';
+                alert("✨ Все изменения успешно применены!");
             });
         }
 
@@ -812,6 +834,7 @@
             const reader = new FileReader();
             reader.onload = function(evt) {
                 userProfilesRef.child(currentUser.toLowerCase()).child('avatar').set(evt.target.result);
+                updateLivePreview();
             };
             reader.readAsDataURL(file);
         }
@@ -824,6 +847,7 @@
             const reader = new FileReader();
             reader.onload = function(evt) {
                 userProfilesRef.child(currentUser.toLowerCase()).child('banner').set(evt.target.result);
+                updateLivePreview();
             };
             reader.readAsDataURL(file);
         }
